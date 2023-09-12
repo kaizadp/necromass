@@ -1,0 +1,68 @@
+------------------------
+DATA-FIELDS
+------------------------
+Record number
+Study number
+Author
+Date added to SNDB
+
+Site information
+- latitude
+- longitude
+- lat lon notes
+- sampling notes
+- elevation
+- MAT
+- MAP
+- biome
+- land use type
+- treatment/disturbance type
+- soil type
+- soil type system
+- plant species
+- study duration
+- notes
+
+Sample information
+- sample name
+- year sampled
+- depth
+- soil fraction
+- % sand
+- % silt
+- % clay
+- texture
+- pH
+- pH method (water, salt)
+- experiment type (field, lab)
+- TC
+- TN
+- TOC
+- SOM
+- bacterial C
+- fungal C
+- MBC
+- MBN
+- bulk density
+
+Necromass info
+- MurN
+- GluN
+- GalN
+- Amino sugars
+- bacterial necroromass
+- fungal necromass
+- microbial necromass
+
+
+
+
+
+------------------------
+STUDIES-FIELDS
+------------------------
+Study number
+Authors
+Title
+DOI
+Notes
