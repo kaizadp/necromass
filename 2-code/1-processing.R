@@ -2,13 +2,10 @@
 ## functions to clean and process the necromass data
 ## 
 
-# load google sheet ----
-db <- read_sheet("1nQc80bapNh3LI50Fdn-ybvKbSyyMs2jpc5SWMJ3Hy4c", sheet = "database", col_types = "c")
 
-#
 # clean up the database ----
-clean_lat_lon = function(all_data){
-  all_data %>% 
+clean_lat_lon = function(dat){
+  dat %>% 
     #dplyr::select(Latitude, Longitude) %>% 
     
     # first, clean up ----
@@ -154,10 +151,16 @@ assign_climate_biome = function(dat){
   
 }
 
-db_processed <- 
-  db %>% 
-  janitor::clean_names() %>% 
-  mutate_at(vars(c(glu_n_glucosamine_mg_kg, mur_n_muramic_acid_mg_kg)), as.numeric) %>% 
-  rename(Latitude = latitude, Longitude = longitude) %>% 
-  clean_lat_lon() %>% 
-  assign_climate_biome()
+clean_db = function(db_gsheets){
+  
+  db_processed <- 
+    db_gsheets %>% 
+    janitor::clean_names() %>% 
+    mutate_at(vars(c(glu_n_glucosamine_mg_kg, mur_n_muramic_acid_mg_kg,
+                     latitude, longitude)), as.numeric) %>% 
+    rename(Latitude = latitude, Longitude = longitude) %>% 
+    clean_lat_lon() %>% 
+    assign_climate_biome() %>% 
+    mutate(ecosystem = tolower(ecosystem))
+  
+}
