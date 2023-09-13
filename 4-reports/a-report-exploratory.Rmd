@@ -1,0 +1,60 @@
+---
+title: "Necromass Database: Exploration"
+output: 
+  github_document:
+  html_preview: true
+---
+
+
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+### Geographical Distribution
+
+```{r map}
+tar_read(gg_map)
+```
+
+### Distribution by MAT-MAP
+
+```{r mat-map, fig.height=5.5, fig.width=6.5}
+tar_read(gg_mat_map)
+```
+
+### Distribution by Whittaker Biome
+
+```{r whittaker, fig.height=5, fig.width=8}
+tar_read(gg_whittaker)
+```
+
+### Distribution by lat-lon
+
+```{r explor-latlon, fig.height=4, fig.width=7}
+tar_read(gg_exploration)$lat
+tar_read(gg_exploration)$lon
+```
+
+### Distribution by other factors
+
+```{r explor-jitters, fig.height=4, fig.width=7}
+tar_read(gg_exploration)$ecosystem
+tar_read(gg_exploration)$climate
+```
+
+---
+
+<details>
+  <summary> Session Info </summary>
+
+Date run: `r Sys.Date()`
+
+```{r}
+sessionInfo()
+```
+
+</details>
