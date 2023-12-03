@@ -3,6 +3,10 @@
 ## 
 
 
+# initial processing/data download
+db_gsheets = read_sheet("1nQc80bapNh3LI50Fdn-ybvKbSyyMs2jpc5SWMJ3Hy4c", 
+                        sheet = "database", col_types = "c")
+
 # clean up the database ----
 clean_lat_lon = function(dat){
   dat %>% 
@@ -153,14 +157,79 @@ assign_climate_biome = function(dat){
 
 clean_db = function(db_gsheets){
   
-  db_processed <- 
+  # assign rownumbers to records and then remove 
+  
+  db_select_columns <- 
     db_gsheets %>% 
-    janitor::clean_names() %>% 
-    mutate_at(vars(c(glu_n_glucosamine_mg_kg, mur_n_muramic_acid_mg_kg,
-                     latitude, longitude)), as.numeric) %>% 
+  #  janitor::clean_names() %>% 
+    rownames_to_column("rownumber") %>% 
+  #  pivot_longer(cols = -c(rownumber)) %>% 
+  #  drop_na() %>% 
+  #  pivot_wider() %>% 
+    dplyr::select(
+      rownumber, author, author_doi, sample, notes,
+      treatment, treatment_level,
+      latitude, longitude, lat_lon_notes, elevation_m, depth_cm, horizon,
+      soil_type, ecosystem, wetland_type, plant_species, 
+      year_sampled,
+      fraction_scheme, aggregate_size,
+      amino_sugars, gluN, murA, galN, manN, 
+      microbial_necromass_C, fungal_necromass_C, bacterial_necromass_C,
+      microbial_biomass_C, microbial_biomass_N, fungal_biomass_C, bacterial_biomass_C,
+      soc, soil_C, soil_N,
+      pH, pH_method, clay, silt, sand
+    ) %>% 
+  #  filter(!is.na(gluN) | !is.na(murA) | !is.na(galN) | !is.na(manN)) %>% 
+    force()
+  
+  db_processed <- 
+    db_select_columns %>% 
+    mutate_at(vars(c(gluN, murA, latitude, longitude)), as.numeric) %>% 
     rename(Latitude = latitude, Longitude = longitude) %>% 
     clean_lat_lon() %>% 
     assign_climate_biome() %>% 
     mutate(ecosystem = tolower(ecosystem))
   
+}
+
+testing = function(){
+x = 
+  cr_works(dois = "10.7710/2162-3309.1252") %>%
+  purrr::pluck("data") %>% dplyr::select(author, published.online, title)
+
+x2 = x %>% purrr::pluck("author") 
+
+
+author = as.data.frame(x$author)[1,"family"] 
+date = x$published.online
+
+x = cr_cn(dois = "10.7710/2162-3309.1252")
+
+
+
+doi_df = tribble(
+  ~doi,
+  "10.7710/2162-3309.1252",
+  "10.7710/2162-3309.1252",
+  "10.7710/2162-3309.1252"
+)
+
+get_bib = function(){
+  
+  doi = doi_df %>% pull(doi)
+  
+  x = 
+    cr_works(dois = doi) %>%
+    purrr::pluck("data") %>% dplyr::select(author, published.online, title)
+  
+  x2 = x[[1]]
+  x2[1,"family"]
+  
+  x %>% 
+    rowwise(author = as.data.frame(x$author)[1,"family"]) 
+  
+  date = x$published.online
+  
+}
+
 }
