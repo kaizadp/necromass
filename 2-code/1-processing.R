@@ -65,7 +65,7 @@ clean_lat_lon = function(dat){
     
     # d. replace all degree, minute, second symbols with spaces
     mutate(
-      latitude_deg = str_replace_all(latitude_deg, "_", " "),
+      latitude_deg = str_replace_all(latitude_deg, "°", " "),
       latitude_deg = str_replace_all(latitude_deg, "'", " "),
       latitude_deg = str_replace_all(latitude_deg, '"', " ")) %>% 
     
@@ -109,7 +109,7 @@ clean_lat_lon = function(dat){
     
     # d. replace all degree, minute, second symbols with spaces
     mutate(
-      longitude_deg = str_replace_all(longitude_deg, "_", " "),
+      longitude_deg = str_replace_all(longitude_deg, "°", " "),
       longitude_deg = str_replace_all(longitude_deg, "'", " "),
       longitude_deg = str_replace_all(longitude_deg, '"', " ")) %>% 
     
