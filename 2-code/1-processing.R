@@ -122,11 +122,12 @@ clean_lat_lon = function(dat){
     mutate(Longitude_corrected = case_when(!is.na(longitude_dec) ~ longitude_dec,
                                            !is.na(lon) ~ as.numeric(lon)),
            Longitude_corrected = round(Longitude_corrected, 3)) %>% 
+    mutate(Latitude = Latitude_corrected,
+           Longitude = Longitude_corrected) %>% 
     
-    dplyr::select(-c("Latitude", "Longitude", "latitude_dec", "latitude_deg", "lat",
-                     "longitude_dec", "longitude_deg", "lon")) %>% 
-    rename(Latitude = Latitude_corrected,
-           Longitude = Longitude_corrected)
+    dplyr::select(-c("latitude_dec", "latitude_deg", "lat",
+                     "longitude_dec", "longitude_deg", "lon",
+                     "Latitude_corrected", "Longitude_corrected")) 
   
 }
 assign_climate_biome = function(dat){
