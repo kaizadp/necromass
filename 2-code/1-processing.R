@@ -158,14 +158,9 @@ assign_climate_biome = function(dat){
 clean_db = function(db_gsheets){
   
   # assign rownumbers to records and then remove 
-  
   db_select_columns <- 
     db_gsheets %>% 
-  #  janitor::clean_names() %>% 
     rownames_to_column("rownumber") %>% 
-  #  pivot_longer(cols = -c(rownumber)) %>% 
-  #  drop_na() %>% 
-  #  pivot_wider() %>% 
     dplyr::select(
       rownumber, author, author_doi, sample, notes,
       treatment, treatment_level,
@@ -179,7 +174,6 @@ clean_db = function(db_gsheets){
       soc, soil_C, soil_N,
       pH, pH_method, clay, silt, sand
     ) %>% 
-  #  filter(!is.na(gluN) | !is.na(murA) | !is.na(galN) | !is.na(manN)) %>% 
     force()
   
   db_processed <- 
@@ -191,6 +185,12 @@ clean_db = function(db_gsheets){
     mutate(ecosystem = tolower(ecosystem))
   
   ## PROCESSING AND CALCULATING NECROMASS COLUMNS
+  ## we have AS data and also some data as necromass.
+  ## pull these columns
+  ## -- where we have AS data, convert to fungal/bacterial necromass
+  ## -- where no AS data but FNC, BNC, use those values
+  ## -- then FNC + BNC = microbial necromass C
+  
   db_necromass = 
     db_select_columns %>% 
     dplyr::select(rownumber, gluN, murA, galN, manN, contains("necromass")) %>% 
@@ -208,13 +208,16 @@ clean_db = function(db_gsheets){
     db_necromass2 %>% 
     filter(AS_data) %>% 
 ## ^need to calculate FNC and BNC and MNC from these
-    mutate(bacterial_necromass_C2 = murA * 45,
-           fungal_necromass_C2 = ((gluN/179.17) - (2 * murA/251.23)) * 179.17 * 9)
+## units are mg/kg
+    mutate(bacterial_necromass_C = murA * 45,
+           fungal_necromass_C = ((gluN/179.17) - (2 * murA/251.23)) * 179.17 * 9,
+           microbial_necromass_C = bacterial_necromass_C + fungal_necromass_C)
     
     
   db_necromass_fnc_bnc = 
     db_necromass2 %>% 
-    filter(necro_data & !AS_data)
+    filter(necro_data & !AS_data) %>% 
+    mutate(microbial_necromass_C = bacterial_necromass_C + fungal_necromass_C)
 ## ^need to back-calculate gluN and murA?? -- probably not  
   
   db_necromass_mnc = 
@@ -222,6 +225,8 @@ clean_db = function(db_gsheets){
     filter(!is.na(microbial_necromass_C) & !AS_data & !necro_data)
 ## ^ leave untouched
   
+  db_necromass_CALCULATED = 
+    bind_rows(db_necromass_as, db_necromass_fnc_bnc, db_necromass_mnc)
 
 }
 
