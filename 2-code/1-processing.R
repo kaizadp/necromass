@@ -157,48 +157,73 @@ assign_climate_biome = function(dat){
 }
 
 clean_db = function(db_gsheets){
-  
+
   # assign rownumbers to records and then remove 
-  db_select_columns <- 
+  # these rownumbers will be carried throughout the rest of the processing script,
+  # used to connect separate pieces later
+  db_rows <- 
     db_gsheets %>% 
-    rownames_to_column("rownumber") %>% 
+    rownames_to_column("rownumber") 
+
+  # now split the big dataframe into smaller pieces to process separately ----   
+  # 1. metadata (includes site info and sample info)
+  db_metadata <- 
+    db_rows %>% 
     dplyr::select(
-      rownumber, author, author_doi, sample, notes,
+      rownumber, sample, notes,
       treatment, treatment_level,
       latitude, longitude, lat_lon_notes, elevation_m, depth_cm, horizon,
       soil_type, ecosystem, wetland_type, plant_species, 
       year_sampled,
-      fraction_scheme, aggregate_size,
-      amino_sugars, gluN, murA, galN, manN, 
-      microbial_necromass_C, fungal_necromass_C, bacterial_necromass_C,
-      microbial_biomass_C, microbial_biomass_N, fungal_biomass_C, bacterial_biomass_C,
+      fraction_scheme, aggregate_size
+    ) %>% 
+    force()
+  
+  # 1b. bibliography info (author, doi, etc.)
+  db_biblio <- 
+    db_rows %>% 
+    dplyr::select(
+      rownumber, author, author_doi) %>% 
+    force()
+  
+  # 2. soil (includes TC, TN, pH, etc.)
+  db_soil <- 
+    db_rows %>% 
+    dplyr::select(
+      rownumber,
+      contains("biomass"),
       soc, soil_C, soil_N,
       pH, pH_method, clay, silt, sand
     ) %>% 
     force()
   
-  db_processed <- 
-    db_select_columns %>% 
-    mutate_at(vars(c(gluN, murA, latitude, longitude)), as.numeric) %>% 
-    rename(Latitude = latitude, Longitude = longitude) %>% 
-    clean_lat_lon() %>% 
-    assign_climate_biome() %>% 
-    mutate(ecosystem = tolower(ecosystem))
-  
-  ## PROCESSING AND CALCULATING NECROMASS COLUMNS
-  ## we have AS data and also some data as necromass.
-  ## pull these columns
-  ## -- where we have AS data, convert to fungal/bacterial necromass
-  ## -- where no AS data but FNC, BNC, use those values
-  ## -- then FNC + BNC = microbial necromass C
-  
+  # 3. necromass (includes AS and necromass)
   db_necromass = 
-    db_select_columns %>% 
+    db_rows %>% 
     dplyr::select(rownumber, gluN, murA, galN, manN, contains("necromass")) %>% 
     mutate_all(as.numeric) %>% 
     column_to_rownames("rownumber") %>% 
     janitor::remove_empty("rows") %>% 
     rownames_to_column("rownumber")
+  
+  #
+  # PROCESS METADATA ----
+  db_metadata_processed <- 
+    db_metadata %>% 
+    rename(Latitude = latitude, Longitude = longitude) %>% 
+    clean_lat_lon() %>% 
+    assign_climate_biome() %>% 
+    mutate(ecosystem = tolower(ecosystem)) %>% 
+    dplyr::select(rownumber, sample, notes,
+                  Latitude, Longitude, lat_lon_notes, elevation_m, 
+                  MAT, MAP, ClimateTypes, everything())
+  
+  ## PROCESSING AND CALCULATING NECROMASS COLUMNS ----
+  ## we have AS data and also some data as necromass.
+  ## pull these columns
+  ## -- where we have AS data, convert to fungal/bacterial necromass
+  ## -- where no AS data but FNC, BNC, use those values
+  ## -- then FNC + BNC = microbial necromass C
     
   db_necromass2 = 
     db_necromass %>% 
@@ -229,7 +254,14 @@ clean_db = function(db_gsheets){
   db_necromass_CALCULATED = 
     bind_rows(db_necromass_as, db_necromass_fnc_bnc, db_necromass_mnc)
 
-}
+  
+  DB_PROCESSED = 
+    db_metadata_processed %>% 
+    right_join(db_necromass_CALCULATED) %>% 
+    left_join(db_soil)
+
+  DB_PROCESSED
+  }
 
 testing = function(){
 x = 
