@@ -19,6 +19,36 @@ Necromass Database: Exploration
 
 ![](a-report-exploratory_files/figure-gfm/jitter-ecosystem-1.png)<!-- -->
 
+### Sample numbers summary
+
+#### Sample count by biome
+
+| ClimateTypes |    n |
+|:-------------|-----:|
+| arid         |  108 |
+| equatorial   |   81 |
+| polar        |   93 |
+| snow         | 1310 |
+| temperate    | 1380 |
+| NA           |   58 |
+
+#### Sample count by ecosystem
+
+| ecosystem |    n |
+|:----------|-----:|
+| cropland  | 1627 |
+| forest    |  679 |
+| grassland |  272 |
+| wetland   |  422 |
+| NA        |   30 |
+
+#### Sample count by depth
+
+![](a-report-exploratory_files/figure-gfm/depth-1.png)<!-- -->
+
+of the 3000+ datapoints, 2512 data points are in the top 20 cm
+(lyrbot_cm \>= 20)
+
 ------------------------------------------------------------------------
 
 <details>
@@ -43,12 +73,12 @@ Date run: 2024-01-09
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ##  [1] rnaturalearthdata_0.1.0 rnaturalearth_0.1.0     sf_1.0-8               
-    ##  [4] maptools_1.1-4          sp_1.5-0                plotbiomes_0.0.0.9001  
-    ##  [7] googlesheets4_1.0.1     lubridate_1.9.2         forcats_1.0.0          
-    ## [10] stringr_1.5.0           dplyr_1.1.0             purrr_1.0.1            
-    ## [13] readr_2.1.4             tidyr_1.3.0             tibble_3.1.8           
-    ## [16] ggplot2_3.4.3           tidyverse_2.0.0        
+    ##  [1] scales_1.2.1            rnaturalearthdata_0.1.0 rnaturalearth_0.1.0    
+    ##  [4] sf_1.0-8                maptools_1.1-4          sp_1.5-0               
+    ##  [7] plotbiomes_0.0.0.9001   googlesheets4_1.0.1     lubridate_1.9.2        
+    ## [10] forcats_1.0.0           stringr_1.5.0           dplyr_1.1.0            
+    ## [13] purrr_1.0.1             readr_2.1.4             tidyr_1.3.0            
+    ## [16] tibble_3.1.8            ggplot2_3.4.3           tidyverse_2.0.0        
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] viridisLite_0.4.1    distributional_0.3.1 highr_0.9           
@@ -57,26 +87,25 @@ Date run: 2024-01-09
     ## [10] backports_1.4.1      lattice_0.20-45      glue_1.6.2          
     ## [13] digest_0.6.29        colorspace_2.0-3     htmltools_0.5.3     
     ## [16] pkgconfig_2.0.3      raster_3.6-23        s2_1.1.0            
-    ## [19] scales_1.2.1         webshot_0.5.4        processx_3.7.0      
-    ## [22] terra_1.7-46         satellite_1.0.4      tzdb_0.3.0          
-    ## [25] timechange_0.2.0     proxy_0.4-27         googledrive_2.0.0   
-    ## [28] farver_2.1.1         generics_0.1.3       ellipsis_0.3.2      
-    ## [31] withr_2.5.0          cli_3.6.0            mapview_2.11.0      
-    ## [34] readxl_1.4.2         magrittr_2.0.3       ps_1.7.1            
-    ## [37] evaluate_0.16        fs_1.5.2             fansi_1.0.3         
-    ## [40] foreign_0.8-82       class_7.3-20         tools_4.2.1         
-    ## [43] data.table_1.14.4    hms_1.1.2            gargle_1.2.0        
-    ## [46] lifecycle_1.0.3      munsell_0.5.0        targets_0.14.0      
-    ## [49] callr_3.7.2          compiler_4.2.1       e1071_1.7-11        
-    ## [52] rlang_1.1.1          classInt_0.4-7       units_0.8-0         
-    ## [55] grid_4.2.1           rstudioapi_0.14      htmlwidgets_1.5.4   
-    ## [58] igraph_1.3.4         crosstalk_1.2.0      labeling_0.4.2      
-    ## [61] leafem_0.2.0         base64enc_0.1-3      rmarkdown_2.21      
-    ## [64] wk_0.6.0             gtable_0.3.0         codetools_0.2-18    
-    ## [67] DBI_1.1.3            R6_2.5.1             knitr_1.42          
-    ## [70] fastmap_1.1.0        utf8_1.2.2           KernSmooth_2.23-20  
-    ## [73] stringi_1.7.8        Rcpp_1.0.11          vctrs_0.5.2         
-    ## [76] png_0.1-7            leaflet_2.2.0        tidyselect_1.2.0    
-    ## [79] xfun_0.37
+    ## [19] webshot_0.5.4        processx_3.7.0       terra_1.7-46        
+    ## [22] satellite_1.0.4      tzdb_0.3.0           timechange_0.2.0    
+    ## [25] proxy_0.4-27         googledrive_2.0.0    farver_2.1.1        
+    ## [28] generics_0.1.3       ellipsis_0.3.2       withr_2.5.0         
+    ## [31] cli_3.6.0            mapview_2.11.0       readxl_1.4.2        
+    ## [34] magrittr_2.0.3       ps_1.7.1             evaluate_0.16       
+    ## [37] fs_1.5.2             fansi_1.0.3          foreign_0.8-82      
+    ## [40] class_7.3-20         tools_4.2.1          data.table_1.14.4   
+    ## [43] hms_1.1.2            gargle_1.2.0         lifecycle_1.0.3     
+    ## [46] munsell_0.5.0        targets_0.14.0       callr_3.7.2         
+    ## [49] compiler_4.2.1       e1071_1.7-11         rlang_1.1.1         
+    ## [52] classInt_0.4-7       units_0.8-0          grid_4.2.1          
+    ## [55] rstudioapi_0.14      htmlwidgets_1.5.4    igraph_1.3.4        
+    ## [58] crosstalk_1.2.0      labeling_0.4.2       leafem_0.2.0        
+    ## [61] base64enc_0.1-3      rmarkdown_2.21       wk_0.6.0            
+    ## [64] gtable_0.3.0         codetools_0.2-18     DBI_1.1.3           
+    ## [67] R6_2.5.1             knitr_1.42           fastmap_1.1.0       
+    ## [70] utf8_1.2.2           KernSmooth_2.23-20   stringi_1.7.8       
+    ## [73] Rcpp_1.0.11          vctrs_0.5.2          png_0.1-7           
+    ## [76] leaflet_2.2.0        tidyselect_1.2.0     xfun_0.37
 
 </details>

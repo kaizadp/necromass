@@ -157,6 +157,57 @@ db_subset %>%
 ```
 
 
+### Sample numbers summary
+
+#### Sample count by biome
+
+```{r}
+db_processed %>% 
+  group_by(ClimateTypes) %>% 
+  dplyr::summarise(n = n()) %>% 
+  knitr::kable()
+```
+
+
+#### Sample count by ecosystem
+```{r}
+db_processed %>% 
+  group_by(ecosystem) %>% 
+  dplyr::summarise(n = n()) %>% 
+  knitr::kable()
+```
+
+#### Sample count by depth
+```{r depth}
+
+depth_summary = 
+  db_processed %>%
+  dplyr::select(lyrtop_cm, lyrbot_cm) %>% 
+  mutate_all(as.numeric) %>% 
+  mutate(lyrtop_cm = round(lyrtop_cm, digits = -1),
+         lyrbot_cm = round(lyrbot_cm, digits = -1)) %>% 
+  group_by(lyrtop_cm, lyrbot_cm) %>% 
+  dplyr::summarise(n = n()) %>% 
+  ungroup() %>% 
+  arrange(n, lyrtop_cm, lyrbot_cm)
+  
+library(scales)
+depth_summary %>% 
+  ggplot(aes(x = n))+
+  geom_hline(yintercept = 20, color = "grey", linetype = "longdash")+
+  geom_segment(aes(y = lyrtop_cm, yend = lyrbot_cm, xend = n,
+                   color = interaction(lyrtop_cm, lyrbot_cm)),
+               show.legend = F, linewidth = 2)+
+  geom_point(aes(y = lyrtop_cm), size = 4)+
+  geom_point(aes(y = lyrbot_cm), size = 4)+
+  scale_x_continuous(trans = c("log10", "reverse"))+
+  scale_y_reverse()+
+  labs(x = "count", y = "depth, cm")
+```
+
+of the 3000+ datapoints, 2512 data points are in the top 20 cm (lyrbot_cm >= 20)
+
+
 
 
 ---
