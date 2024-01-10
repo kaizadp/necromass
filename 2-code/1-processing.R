@@ -316,7 +316,8 @@ clean_db = function(db_gsheets){
 ## ^ leave untouched
   
   db_necromass_CALCULATED = 
-    bind_rows(db_necromass_as, db_necromass_fnc_bnc, db_necromass_mnc)
+    bind_rows(db_necromass_as, db_necromass_fnc_bnc, db_necromass_mnc) %>% 
+    dplyr::select(-c(AS_data, necro_data))
 
   
   DB_PROCESSED = 
