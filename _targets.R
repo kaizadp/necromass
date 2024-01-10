@@ -29,6 +29,12 @@ list(
   # process and clean data
   tar_target(db_processed, clean_db(db_gsheets)),
   
+  # export
+  tar_target(export, {
+    write.csv(db_processed, "3-database/database_data.csv", row.names = FALSE)
+    #write.csv(db_biblio, "3-databased/database_studies.csv", row.names = FALSE)
+  }, format = "file"),
+  
   # reports
   tar_render(report_exploratory, path = "4-reports/a-report-exploratory.Rmd")
 )
