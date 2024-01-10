@@ -1,7 +1,9 @@
 library(tidyverse)
 library(googlesheets4)
 # devtools::install_github("valentinitnelav/plotbiomes", force = TRUE)
-library(plotbiomes) # for Whittaker Biomes
+library(plotbiomes) # for plotting Whittaker Biomes
+library(maptools); library(sf) # for assigning Whittaker biomes
+
 
 theme_kp <- function() {  # this for all the elements common across plots
   theme_bw() %+replace%
