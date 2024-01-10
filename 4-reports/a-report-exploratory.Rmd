@@ -1,0 +1,173 @@
+---
+title: "Necromass Database: Exploration"
+output: 
+  github_document:
+  html_preview: true
+---
+
+
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+```{r}
+source("2-code/0-packages.R")
+targets::tar_load(db_processed)
+```
+
+
+### Geographical Distribution
+
+```{r map_all_climate}
+
+# mapping all MAT-MAP data points ----
+KoeppenGeigerASCII = readxl::read_xlsx("1-data/geographic_databases/KoeppenGeigerASCII.xlsx")
+# KG climate zone map of all the globe
+map_climate_regions_all = 
+  KoeppenGeigerASCII %>% 
+  mutate(ClimateTypes = case_when(grepl("A", ClimateTypes) ~ "equatorial",
+                                  grepl("B", ClimateTypes) ~ "arid",
+                                  grepl("C", ClimateTypes) ~ "temperate",
+                                  grepl("D", ClimateTypes) ~ "snow",
+                                  grepl("E", ClimateTypes) ~ "polar")) %>% 
+  #  reorder_biome_levels() %>% 
+  ggplot(aes(x = Longitude, y = Latitude, color = ClimateTypes))+
+  geom_point()+
+  scale_color_viridis_d(option = "turbo", direction = -1, na.translate = F)+
+  labs(color = "",
+       x = "",
+       y = "")+
+  theme_kp()+
+  theme(axis.text = element_blank(),
+        panel.grid = element_blank(),
+        axis.ticks = element_blank())+
+  NULL
+
+```
+
+
+```{r map_data_points}
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(sf)
+
+# mapping our data distribution ----
+world <- ne_countries(scale = "medium",  returnclass = "sf", type = "countries")
+
+sndb_map_data = 
+  db_processed %>% 
+  distinct(Latitude, Longitude, ClimateTypes) %>% 
+  drop_na()
+
+world %>% 
+  ggplot()+
+  geom_sf(color = NA, alpha = 0.7)+
+  geom_point(data = sndb_map_data,
+             aes(x = Longitude, y = Latitude,
+                 color = ClimateTypes), 
+             size = 2)+
+  labs(color = "",
+       x = "",
+       y = "")+
+  scale_color_viridis_d(option = "turbo", direction = -1, na.translate = F)+
+  #theme_void()+
+  theme_kp()+
+  theme(axis.text = element_blank(),
+        legend.position = "top")+
+  guides(colour = guide_legend(nrow = 1))+
+  NULL
+
+```
+
+
+### Distribution by MAT-MAP
+
+```{r mat-map, fig.height=5.5, fig.width=6.5}
+
+# plot MAT/MAP distribution
+  db_processed %>% 
+    ggplot(aes(x = MAT, y = MAP/10))+
+    geom_point(aes(color = ClimateTypes), size = 3)+
+    labs(x = "
+         Mean annual temperature (°C)",
+         y = "Mean annual precipitation (cm)
+         ")+
+    scale_color_viridis_d(option = "turbo", direction = -1, na.translate = F)+
+    theme_kp()+
+    theme(legend.position = c(0.15, 0.8))+
+    NULL
+```
+
+### Distribution by Whittaker Biome
+
+```{r whittaker, fig.height=5, fig.width=8}
+
+# devtools::install_github("valentinitnelav/plotbiomes", force = TRUE)
+  # library(plotbiomes)
+  
+  ggplot() +
+    # add biome polygons
+    geom_polygon(data = Whittaker_biomes,
+                 aes(x    = temp_c,
+                     y    = precp_cm,
+                     fill = biome),
+                 # adjust polygon borders
+                 colour = "gray98",
+                 linewidth = 1) +
+    geom_point(data = db_processed %>% mutate(mat = as.numeric(MAT), map_mm = as.numeric(MAP)), 
+               aes(x = mat, y = map_mm/10), 
+               size = 2,
+               show.legend = F)+
+    labs(x = "
+         Mean annual temperature (°C)",
+         y = "Mean annual precipitation (cm)
+         ")+
+    theme_kp()+
+    theme(legend.position = "right")
+
+```
+
+
+### Distribution by ecosystem
+
+```{r}
+db_subset <- 
+    db_processed %>% 
+    dplyr::select(contains("necromass"), ecosystem, ClimateTypes, biome_name)
+```
+
+
+
+```{r jitter-ecosystem, fig.height=4, fig.width=7}
+
+db_subset %>% 
+    ggplot(aes(x = ecosystem, y = microbial_necromass_C))+
+    ggdist::stat_halfeye(aes(), 
+                         size = 1, alpha = 0.5,
+                         position = position_nudge(x = 0.2), width = 0.5, 
+                         #slab_color = "black"
+    )+
+    geom_jitter(aes(), width = 0.1, )  +
+    scale_y_continuous(labels = scales::comma)
+
+```
+
+
+
+
+---
+
+<details>
+<summary> Session Info </summary>
+
+Date run: `r Sys.Date()`
+
+```{r}
+sessionInfo()
+```
+
+</details>
