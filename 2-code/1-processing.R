@@ -226,14 +226,15 @@ clean_db = function(db_gsheets){
   # used to connect separate pieces later
   db_rows <- 
     db_gsheets %>% 
-    rownames_to_column("rownumber") 
+    rownames_to_column("rownumber") %>% 
+    filter(is.na(skip))
 
   # now split the big dataframe into smaller pieces to process separately ----   
   # 1. metadata (includes site info and sample info)
   db_metadata <- 
     db_rows %>% 
     dplyr::select(
-      rownumber, sample, notes,
+      rownumber, notes,
       treatment, treatment_level,
       latitude, longitude, lat_lon_notes, elevation_m, lyrtop_cm, lyrbot_cm, horizon,
       soil_type, ecosystem, wetland_type, plant_species, 
@@ -278,7 +279,7 @@ clean_db = function(db_gsheets){
     assign_climate_biome() %>% 
     assign_whittaker_biome() %>% 
     mutate(ecosystem = tolower(ecosystem)) %>% 
-    dplyr::select(rownumber, sample, notes,
+    dplyr::select(rownumber, notes,
                   Latitude, Longitude, lat_lon_notes, elevation_m, 
                   MAT, MAP, ClimateTypes, biome_name, everything())
   
@@ -326,5 +327,31 @@ clean_db = function(db_gsheets){
     left_join(db_soil)
 
   DB_PROCESSED
+  
+  
+  # PROCESS BIBLIOGRAPHY ----
+  studies <- 
+    DB_PROCESSED %>% 
+    dplyr::select(rownumber) %>% 
+    left_join(db_biblio) %>% 
+    distinct(author_doi) %>% 
+    drop_na() %>% 
+    #filter(grepl("doi", author_doi)) %>% 
+    arrange(desc(author_doi)) %>% 
+    mutate(SNDB_study_number = rownames(.)) 
+  
+  set_sndb_numbers = function(studies, db_biblio, DB_PROCESSED){
+    #db_with_numbers = 
+      studies %>% 
+      left_join(db_biblio) %>% 
+      dplyr::select(rownumber, SNDB_study_number) %>% 
+      right_join(DB_PROCESSED) %>% 
+      mutate(SNDB_record_number = rownames(.)) %>% 
+      dplyr::select(SNDB_record_number, SNDB_study_number, everything(), -rownumber)
+    
+    
+  }
+  DB_WITH_NUMBERS = set_sndb_numbers(studies, db_biblio, DB_PROCESSED)
+  
   }
 
