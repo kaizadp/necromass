@@ -184,6 +184,7 @@ depth_summary =
   db_processed %>%
   dplyr::select(lyrtop_cm, lyrbot_cm) %>% 
   mutate_all(as.numeric) %>% 
+  filter(lyrtop_cm < 1000) %>% 
   mutate(lyrtop_cm = round(lyrtop_cm, digits = -1),
          lyrbot_cm = round(lyrbot_cm, digits = -1)) %>% 
   group_by(lyrtop_cm, lyrbot_cm) %>% 
@@ -208,6 +209,18 @@ depth_summary %>%
 of the 3000+ datapoints, 2512 data points are in the top 20 cm (lyrbot_cm >= 20)
 
 
+```{r}
+
+db_processed %>% 
+  ggplot(aes(x = as.numeric(lyrbot_cm)))+
+  geom_density()+
+  geom_histogram()+
+  coord_flip()+
+  scale_x_reverse()+
+  labs(x = "bottom depth, cm")
+
+
+```
 
 
 ---
