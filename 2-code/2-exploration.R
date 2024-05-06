@@ -91,8 +91,8 @@ plot_whittaker_biomes = function(db_processed){
                      fill = biome),
                  # adjust polygon borders
                  colour = "gray98",
-                 size   = 1) +
-    geom_point(data = db_processed %>% mutate(mat = as.numeric(mat), map_mm = as.numeric(map_mm)), 
+                 linewidth = 1) +
+    geom_point(data = db_processed %>% mutate(mat = as.numeric(MAT), map_mm = as.numeric(MAP)), 
                aes(x = mat, y = map_mm/10), 
                size = 2,
                show.legend = F)+
@@ -102,7 +102,6 @@ plot_whittaker_biomes = function(db_processed){
          ")+
     theme_kp()+
     theme(legend.position = "right")
-  
 }
 
 #
@@ -113,44 +112,128 @@ plot_jitters = function(db_processed){
 
   db_subset <- 
     db_processed %>% 
-    dplyr::select(mur_n_muramic_acid_mg_kg, glu_n_glucosamine_mg_kg, 
-                  Latitude, Longitude, ecosystem, ClimateTypes) %>% 
-    pivot_longer(cols = c(mur_n_muramic_acid_mg_kg, glu_n_glucosamine_mg_kg)) %>% 
-    filter(!is.na(value))
+    dplyr::select(contains("necromass"), ecosystem, ClimateTypes, biome_name)
   
-  lon = 
-    db_subset %>% 
-    ggplot(aes(x = Longitude, y = value))+
-    geom_point()+
-    facet_wrap(~name, scales = "free_y")
+  db_subset %>% 
+    ggplot(aes(x = ecosystem, y = microbial_necromass_C))+
+    ggdist::stat_halfeye(aes(), 
+                         size = 1, alpha = 0.5,
+                         position = position_nudge(x = 0.2), width = 0.5, 
+                         #slab_color = "black"
+    )+
+    geom_jitter(aes(), width = 0.1, )  +
+    scale_y_continuous(labels = scales::comma)
   
-  lat = 
-    db_subset %>% 
-    ggplot(aes(y = Latitude, x = value))+
-    geom_point()+
-    facet_wrap(~name, scales = "free_x")
   
-  ecosystem = 
-    db_subset %>% 
-    ggplot(aes(x = ecosystem, y = value))+
-    geom_jitter()+
-    facet_wrap(~name, scales = "free_y")+
-    labs(subtitle = "by ecosystem")+
-    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}
+
+sample_numbers = function(db_processed){
   
-  climate = 
-    db_subset %>% 
-    ggplot(aes(x = ClimateTypes, y = value))+
-    geom_jitter()+
-    facet_wrap(~name, scales = "free_y")+
-    labs(subtitle = "by KoeppenGeiger climate")+
-    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  sample_count_biome = 
+    db_processed %>% 
+    group_by(ClimateTypes) %>% 
+    dplyr::summarise(n = n())
   
-  list(lat = lat,
-       lon = lon,
-       ecosystem = ecosystem,
-       climate = climate)
+  sample_count_ecosystem = 
+    db_processed %>% 
+    group_by(ecosystem) %>% 
+    dplyr::summarise(n = n())
+  
+  sample_count_depth = 
+    db_processed %>% 
+    group_by(lyrtop_cm) %>% 
+    dplyr::summarise(n = n())
+
 }
 
 
+
+
+
+for_report = function(){
+  
+  # ecosystem numbers ----
+  db_processed %>% 
+    group_by(ecosystem) %>% 
+    dplyr::summarise(n = n())
+  
+  db_processed %>% 
+    group_by(ClimateTypes) %>% 
+    dplyr::summarise(n = n())
+  
+  # ecosystem jitter ----
+  numbers = 
+    db_subset %>% 
+    filter(!ecosystem %in% c("meadow", NA)) %>% 
+    filter(name == "gluN") %>% 
+    filter(!is.na(value)) %>% 
+    group_by(ecosystem) %>% 
+    dplyr::summarise(n = n())
+  
+  db_subset %>% 
+    filter(!ecosystem %in% c("meadow", NA)) %>% 
+    filter(name == "glu_n_glucosamine_mg_kg") %>% 
+    filter(!is.na(value)) %>% 
+    ggplot(aes(x = ecosystem, y = value,
+               fill = ecosystem))+
+    geom_boxplot(alpha = 0.5, outlier.colour = NA, show.legend = F)+
+    geom_jitter(width = 0.2, size = 0.5, show.legend = F)+
+    geom_text(data = numbers, aes(label = paste0("n = ", n), y = -500))+
+    # facet_wrap(~name, scales = "free_y")+
+    labs(subtitle = "Glucosamine by ecosystem",
+         y = "Glucosamine, mg/kg soil")
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  
+  
+  
+  db_necromass = 
+    db_processed %>% 
+    dplyr::select(mur_n_muramic_acid_mg_kg, glu_n_glucosamine_mg_kg, 
+                  Latitude, Longitude, ecosystem, ClimateTypes) %>% 
+    mutate(bacterial_necromass_c_mgkg = mur_n_muramic_acid_mg_kg*45,
+           fungal_necromass_c_mgkg = ((glu_n_glucosamine_mg_kg/179.17) - (2*mur_n_muramic_acid_mg_kg/251.23))*179.17 * 9)
+  
+  
+  
+  
+  db_necromass %>% 
+    filter(!ecosystem %in% c("meadow", NA)) %>% 
+    ggplot(aes(x = ecosystem, y = fungal_necromass_c_mgkg/1000,
+               fill = ecosystem))+
+    geom_boxplot(alpha = 0.5, outlier.colour = NA, show.legend = F)+
+    geom_jitter(width = 0.2, size = 0.5, show.legend = F)+
+   # geom_text(data = numbers, aes(label = paste0("n = ", n), y = -500))+
+    # facet_wrap(~name, scales = "free_y")+
+    labs(subtitle = "Glucosamine by ecosystem",
+         y = "Glucosamine, mg/kg soil")
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  
+  
+  
+  
+}
+
+
+# explore depths ----
+
+depth_summary = 
+  db_processed %>%
+  dplyr::select(lyrtop_cm, lyrbot_cm) %>% 
+  mutate_all(as.numeric) %>% 
+  mutate(lyrtop_cm = round(lyrtop_cm, digits = -1),
+         lyrbot_cm = round(lyrbot_cm, digits = -1)) %>% 
+  group_by(lyrtop_cm, lyrbot_cm) %>% 
+  dplyr::summarise(n = n()) %>% 
+  ungroup() %>% 
+  arrange(n, lyrtop_cm, lyrbot_cm)
+  
+library(scales)
+depth_summary %>% 
+  ggplot(aes(x = n))+
+  geom_segment(aes(y = lyrtop_cm, yend = lyrbot_cm, xend = n,
+                   color = interaction(lyrtop_cm, lyrbot_cm)),
+               show.legend = F, linewidth = 2)+
+  geom_point(aes(y = lyrtop_cm), size = 4)+
+  geom_point(aes(y = lyrbot_cm), size = 4)+
+  scale_x_continuous(trans = c("log10", "reverse"))+
+  scale_y_reverse()
+# of the xx datapoints, 2475 data points are in the top 20 cm
 
