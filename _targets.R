@@ -28,13 +28,16 @@ list(
   
   # process and clean data
   tar_target(db_processed, clean_db(db_gsheets)),
+  tar_target(db_processed_data, db_processed$DB_WITH_NUMBERS),
+  tar_target(db_processed_studies, db_processed$STUDIES_FULL),
   
-  # export
-  tar_target(export, {
-    write.csv(db_processed, "3-database/database_data.csv", row.names = FALSE)
-    #write.csv(db_biblio, "3-databased/database_studies.csv", row.names = FALSE)
-  }, format = "file"),
+ # export
+ tar_target(export, {
+   write.csv(db_processed_data, "3-database/database_data.csv", row.names = FALSE, na = "")
+   write.csv(db_processed_studies, "3-database/database_studies.csv", row.names = FALSE)
+ }, 
+ format = "file")
   
   # reports
-  tar_render(report_exploratory, path = "4-reports/a-report-exploratory.Rmd")
+  #tar_render(report_exploratory, path = "4-reports/a-report-exploratory.Rmd")
 )

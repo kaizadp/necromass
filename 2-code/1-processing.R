@@ -326,7 +326,7 @@ clean_db = function(db_gsheets){
     right_join(db_necromass_CALCULATED) %>% 
     left_join(db_soil)
 
-  DB_PROCESSED
+  #DB_PROCESSED
   
   
   # PROCESS BIBLIOGRAPHY ----
@@ -338,12 +338,13 @@ clean_db = function(db_gsheets){
     drop_na() %>% 
     #filter(grepl("doi", author_doi)) %>% 
     arrange(desc(author_doi)) %>% 
-    mutate(SNDB_study_number = rownames(.)) 
+    mutate(SNDB_study_number = rownames(.)) %>% 
+    dplyr::select(SNDB_study_number, author_doi)
   
   set_sndb_numbers = function(studies, db_biblio, DB_PROCESSED){
     #db_with_numbers = 
-      studies %>% 
-      left_join(db_biblio) %>% 
+      db_biblio %>% 
+      left_join(studies) %>% 
       dplyr::select(rownumber, SNDB_study_number) %>% 
       right_join(DB_PROCESSED) %>% 
       mutate(SNDB_record_number = rownames(.)) %>% 
@@ -352,6 +353,48 @@ clean_db = function(db_gsheets){
     
   }
   DB_WITH_NUMBERS = set_sndb_numbers(studies, db_biblio, DB_PROCESSED)
+
+  
+  get_full_biblio <- function(studies){
+    # use the `RefManageR` package to pull author names, article title, etc. from DOIs
+    library(RefManageR)
+    
+    x = studies %>% distinct(author_doi, SNDB_study_number) %>% filter(grepl("doi", author_doi))
+    
+    # some DOIs will break the code. Chinese DOIs and one weird Springer DOI. Removing those first.
+    ignore_dois = c(
+      "cnki",
+      "j.1000",
+      "j.1001", 
+      "j.issn",
+      "trxb",
+      "https://doi.org/10.1023/A:1010694032121"
+    )
+    
+    x2 = 
+      x %>% 
+      filter(!grepl(paste(ignore_dois, collapse = "|"), author_doi)) %>% 
+      pull(author_doi)
+    
+    doi_details = 
+      x2 %>% 
+      GetBibEntryWithDOI(.) %>% 
+      as.data.frame() %>% 
+      rownames_to_column("study") %>% 
+        dplyr::select(study, doi, url, title, author, journal, year)
+      
+    studies_with_full_doi = 
+      studies %>% 
+      mutate(author_doi = str_remove(author_doi, "https://doi.org/")) %>% 
+      left_join(doi_details, by = c("author_doi" = "doi")) %>% 
+      rename(doi = author_doi) %>% 
+      dplyr::select(-study, -url)
+      
+    }
+  STUDIES_FULL = get_full_biblio(studies)
+  
+  list(DB_WITH_NUMBERS = DB_WITH_NUMBERS,
+       STUDIES_FULL = STUDIES_FULL)
   
   }
 
