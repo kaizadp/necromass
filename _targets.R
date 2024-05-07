@@ -34,7 +34,7 @@ list(
  # export
  tar_target(export, {
    write.csv(db_processed_data, "3-database/database_data.csv", row.names = FALSE, na = "")
-   write.csv(db_processed_studies, "3-database/database_studies.csv", row.names = FALSE)
+   write.csv(db_processed_studies, "3-database/database_studies.csv", row.names = FALSE, na = "")
  }, 
  format = "file")
   
