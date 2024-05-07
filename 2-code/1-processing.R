@@ -359,9 +359,8 @@ clean_db = function(db_gsheets){
     # use the `RefManageR` package to pull author names, article title, etc. from DOIs
     library(RefManageR)
     
-    x = studies %>% distinct(author_doi, SNDB_study_number) %>% filter(grepl("doi", author_doi))
-    
-    # some DOIs will break the code. Chinese DOIs and one weird Springer DOI. Removing those first.
+    # some DOIs will break the code. Chinese DOIs and a few weird Springer DOIs. Removing those first.
+    # those will be done below, in the "manual DOIs" section 
     ignore_dois = c(
       "cnki",
       "j.1000",
@@ -370,6 +369,9 @@ clean_db = function(db_gsheets){
       "trxb",
       "https://doi.org/10.1023/A:1010694032121"
     )
+    
+    ## using RefManageR
+    x = studies %>% distinct(author_doi, SNDB_study_number) %>% filter(grepl("doi", author_doi))
     
     x2 = 
       x %>% 
@@ -383,18 +385,38 @@ clean_db = function(db_gsheets){
       rownames_to_column("study") %>% 
         dplyr::select(study, doi, url, title, author, journal, year)
       
-    studies_with_full_doi = 
+    studies_with_doi_details = 
       studies %>% 
       mutate(author_doi = str_remove(author_doi, "https://doi.org/")) %>% 
       left_join(doi_details, by = c("author_doi" = "doi")) %>% 
       rename(doi = author_doi) %>% 
-      dplyr::select(-study, -url)
+      dplyr::select(-study, -url) %>% 
+      filter(!is.na(title))
+    
+    
+    ## manual DOIs
+    manual = read.csv("1-data/biblio_manual_addiitons.csv", na = "")
+    studies_with_doi_manual = 
+      studies %>% 
+      mutate(author_doi = str_remove(author_doi, "https://doi.org/")) %>% 
+      left_join(manual) %>% 
+      filter(!is.na(title)) %>% 
+      dplyr::select(-author_doi)
+    
+    studies_with_full_doi = 
+      studies_with_doi_details %>% rbind(studies_with_doi_manual) %>% 
+      mutate(SNDB_study_number = as.numeric(SNDB_study_number)) %>% 
+      arrange(SNDB_study_number)
       
-    }
+  }
+  
   STUDIES_FULL = get_full_biblio(studies)
   
   list(DB_WITH_NUMBERS = DB_WITH_NUMBERS,
        STUDIES_FULL = STUDIES_FULL)
+  
+  
+
   
   }
 
