@@ -24,7 +24,7 @@ source("2-code/1-processing.R")
 list(
   # load raw database
   tar_target(db_gsheets_data, "1-data/RAW-db_gsheets.csv", format = "file"),
-  tar_target(db_gsheets, read.csv(db_gsheets_data)),
+  tar_target(db_gsheets, read.csv(db_gsheets_data, na = "")),
   # process and clean data
   tar_target(db_processed, clean_db(db_gsheets)),
   tar_target(db_processed_data, db_processed$DB_WITH_NUMBERS),
