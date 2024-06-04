@@ -4,8 +4,8 @@
 
 
 # initial processing/data download
-db_gsheets = read_sheet("1nQc80bapNh3LI50Fdn-ybvKbSyyMs2jpc5SWMJ3Hy4c", 
-                        sheet = "database", col_types = "c")
+#db_gsheets = read_sheet("1nQc80bapNh3LI50Fdn-ybvKbSyyMs2jpc5SWMJ3Hy4c", 
+#                        sheet = "database", col_types = "c")
 
 # clean up the database ----
 clean_lat_lon = function(dat){

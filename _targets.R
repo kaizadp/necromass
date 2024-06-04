@@ -22,10 +22,9 @@ source("2-code/1-processing.R")
 
 # Replace the target list below with your own:
 list(
-  # import database from google drive
-#  tar_target(db_gsheets, read_sheet("1nQc80bapNh3LI50Fdn-ybvKbSyyMs2jpc5SWMJ3Hy4c", 
-#                                    sheet = "database", col_types = "c")),
-  
+  # load raw database
+  tar_target(db_gsheets_data, "1-data/RAW-db_gsheets.csv", format = "file"),
+  tar_target(db_gsheets, read.csv(db_gsheets_data)),
   # process and clean data
   tar_target(db_processed, clean_db(db_gsheets)),
   tar_target(db_processed_data, db_processed$DB_WITH_NUMBERS),
