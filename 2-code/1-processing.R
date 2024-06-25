@@ -302,6 +302,7 @@ clean_db = function(db_gsheets){
 ## units are mg/kg
     mutate(bacterial_necromass_C = murA * 45,
            fungal_necromass_C = ((gluN/179.17) - (2 * murA/251.23)) * 179.17 * 9,
+           fungal_necromass_C = case_when(fungal_necromass_C < 0 ~ 0, TRUE ~ fungal_necromass_C),
            microbial_necromass_C = bacterial_necromass_C + fungal_necromass_C)
     
     
