@@ -104,3 +104,31 @@ summarise_all(funs(sum(!is.na(.)))) %>%
 
 db_processed_data %>% skimr::skim()
 x = str(db_processed_data)
+
+
+
+# -------------------------------------------------------------------------
+
+db_processed_data2 = 
+  db_processed %>% 
+  mutate_at(vars(c(lyrtop_cm, lyrbot_cm,
+                   contains(c("necromass", "biomass"))),
+                 soc:sand), as.numeric) %>% 
+  mutate(soc = case_when(is.na(soc) ~ soil_C,
+                         TRUE ~ soc),
+         MNC_SOC = 100 * microbial_necromass_C/(1000 * soc),
+         high_necro = case_when(MNC_SOC >= 100 ~ "TRUE"))
+
+
+db_processed_data2 %>% 
+  ggplot(aes(y = microbial_necromass_C, x = soc))+
+  geom_point()+ 
+  facet_wrap(~ecosystem)
+
+db_processed_data2 %>% 
+  ggplot(aes(y = 100 * microbial_necromass_C/(1000*soc), x = ecosystem))+
+  geom_jitter()
+
+db_processed_data2 %>% 
+  ggplot(aes(x = 1, y = soc/10))+
+  geom_jitter()
