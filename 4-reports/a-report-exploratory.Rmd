@@ -161,7 +161,8 @@ h_bnc = agricolae::HSD.test(a_bnc, "ecosystem")$groups %>% rownames_to_column("e
 
 ```{r jitter-ecosystem, fig.height=4, fig.width=7}
 
-db_subset %>% 
+gg_mnc = 
+  db_subset %>% 
   filter(!is.na(ecosystem)) %>% 
   ggplot(aes(x = ecosystem, y = microbial_necromass_C/1000,
              color = ecosystem, fill = ecosystem))+
@@ -182,7 +183,8 @@ db_subset %>%
   theme(legend.position = "none")
 
 
-db_subset %>% 
+gg_bnc = 
+  db_subset %>% 
   filter(!is.na(ecosystem)) %>% 
   ggplot(aes(x = ecosystem, y = bacterial_percent,
              color = ecosystem, fill = ecosystem))+
@@ -202,31 +204,34 @@ labs(y = "BNC:MNC, %",
   theme_kp()+
   theme(legend.position = "none")
 
-
 ```
 
 
 
+```{r}
+gg_depth <- 
+  db_processed %>% 
+  filter(lyrtop_cm <= 100) %>% 
+  ggplot(aes(y = lyrbot_cm, x = microbial_necromass_C/1000))+
+  geom_point(color = "darkgreen")+
+  labs(x = "Microbial Necromass C, g/kg",
+       y = "Bottom depth, cm")+
+  scale_y_reverse()
 
+gg_lat = 
+  db_processed %>% 
+  filter(!is.na(ecosystem)) %>% 
+  ggplot(aes(y = Latitude, x = microbial_necromass_C/1000))+
+  geom_point(color = "brown")+
+  scale_color_brewer(palette = "Dark2", direction = -1)+
+  labs(x = "Microbial Necromass C, g/kg")+
+  theme_kp()
+  
+```
 
 
 ```{r}
-#db_depth <- 
-  db_processed %>% 
-  filter(lyrtop_cm <= 100) %>% 
-  ggplot(aes(y = lyrbot_cm, x = microbial_necromass_C))+
-  geom_jitter()+
-  scale_y_reverse()
-
-  db_processed %>% 
-  ggplot(aes(y = Latitude, x = microbial_necromass_C))+
-  geom_jitter()
-  
-  db_subset %>% 
-  ggplot(aes(x = clay, y = microbial_necromass_C))+
-  geom_point()+
-    facet_wrap(~ecosystem)
-  
+cowplot::plot_grid(gg_mnc, gg_bnc, gg_lat, gg_depth, labels = "AUTO")
 ```
 
 
