@@ -17,8 +17,12 @@ knitr::opts_chunk$set(echo = FALSE,
 ```{r}
 source("2-code/0-packages.R")
 targets::tar_load(db_processed)
+
+db_processed = read.csv("3-database/database_data.csv", na = "")
+
 ```
 
+## FIGURES 
 
 ### Geographical Distribution
 
@@ -61,7 +65,8 @@ world <- ne_countries(scale = "medium",  returnclass = "sf", type = "countries")
 sndb_map_data = 
   db_processed %>% 
   distinct(Latitude, Longitude, ClimateTypes) %>% 
-  drop_na()
+  drop_na() %>% 
+  mutate(ClimateTypes = factor(ClimateTypes, levels = c("arid", "equatorial", "temperate", "snow", "polar")))
 
 world %>% 
   ggplot()+
@@ -76,7 +81,7 @@ world %>%
   scale_color_viridis_d(option = "turbo", direction = -1, na.translate = F)+
   #theme_void()+
   theme_kp()+
-  theme(axis.text = element_blank(),
+  theme(axis.text = element_text(color = "black"),
         legend.position = "top")+
   guides(colour = guide_legend(nrow = 1))+
   NULL
@@ -134,48 +139,96 @@ world %>%
 
 ### Distribution by ecosystem
 
-```{r}
+```{r subset}
 db_subset <- 
-    db_processed %>% 
-    dplyr::select(contains("necromass"), ecosystem, ClimateTypes, biome_name)
+  db_processed %>% 
+  dplyr::select(contains("necromass"), ecosystem, ClimateTypes, biome_name, clay, fraction_scheme, horizon) %>% 
+  filter(fraction_scheme == "bulk soil") %>% 
+  mutate(bacterial_percent = 100 * bacterial_necromass_C/microbial_necromass_C)
 ```
 
 
+```{r ecosystem_stats}
+# stats
+
+a_mnc = aov(microbial_necromass_C ~ ecosystem, data = db_subset %>% filter(!is.na(ecosystem)))
+h_mnc = agricolae::HSD.test(a_mnc, "ecosystem")$groups %>% rownames_to_column("ecosystem")
+
+a_bnc = aov((bacterial_percent) ~ ecosystem, data = db_subset %>% filter(!is.na(ecosystem)))
+h_bnc = agricolae::HSD.test(a_bnc, "ecosystem")$groups %>% rownames_to_column("ecosystem")
+
+```
 
 ```{r jitter-ecosystem, fig.height=4, fig.width=7}
 
 db_subset %>% 
-    ggplot(aes(x = ecosystem, y = microbial_necromass_C))+
-    ggdist::stat_halfeye(aes(), 
-                         size = 1, alpha = 0.5,
-                         position = position_nudge(x = 0.2), width = 0.5, 
-                         #slab_color = "black"
-    )+
-    geom_jitter(aes(), width = 0.1, )  +
-    scale_y_continuous(labels = scales::comma)
+  filter(!is.na(ecosystem)) %>% 
+  ggplot(aes(x = ecosystem, y = microbial_necromass_C/1000,
+             color = ecosystem, fill = ecosystem))+
+  ggdist::stat_halfeye(aes(), 
+                       size = 1, alpha = 0.5,
+                       position = position_nudge(x = 0.2), width = 0.5, 
+                       #slab_color = "black"
+  )+
+  geom_jitter(aes(), width = 0.1, )  +
+  geom_text(data = h_mnc,
+            aes(y = 200, label = groups), color = "black", size = 5)+
+  labs(y = "Microbial Necromass C, g/kg",
+       x = "Ecosystem")+
+  scale_y_continuous(labels = scales::comma)+
+  scale_color_brewer(palette = "Dark2", direction = -1)+
+  scale_fill_brewer(palette = "Dark2", direction = -1)+
+  theme_kp()+
+  theme(legend.position = "none")
+
+
+db_subset %>% 
+  filter(!is.na(ecosystem)) %>% 
+  ggplot(aes(x = ecosystem, y = bacterial_percent,
+             color = ecosystem, fill = ecosystem))+
+  ggdist::stat_halfeye(aes(), 
+                       size = 1, alpha = 0.5,
+                       position = position_nudge(x = 0.2), width = 0.5, 
+                       #slab_color = "black"
+  )+
+  geom_jitter(aes(), width = 0.1, )  +
+    geom_text(data = h_bnc, 
+            aes(y = 110, label = groups), color = "black", size = 5)+
+labs(y = "BNC:MNC, %",
+       x = "Ecosystem")+
+  scale_y_continuous(labels = scales::comma)+
+  scale_color_brewer(palette = "Dark2", direction = -1)+
+  scale_fill_brewer(palette = "Dark2", direction = -1)+
+  theme_kp()+
+  theme(legend.position = "none")
+
 
 ```
 
 
-### Sample numbers summary
 
-#### Sample count by biome
+
+
 
 ```{r}
-db_processed %>% 
-  group_by(ClimateTypes) %>% 
-  dplyr::summarise(n = n()) %>% 
-  knitr::kable()
+#db_depth <- 
+  db_processed %>% 
+  filter(lyrtop_cm <= 100) %>% 
+  ggplot(aes(y = lyrbot_cm, x = microbial_necromass_C))+
+  geom_jitter()+
+  scale_y_reverse()
+
+  db_processed %>% 
+  ggplot(aes(y = Latitude, x = microbial_necromass_C))+
+  geom_jitter()
+  
+  db_subset %>% 
+  ggplot(aes(x = clay, y = microbial_necromass_C))+
+  geom_point()+
+    facet_wrap(~ecosystem)
+  
 ```
 
-
-#### Sample count by ecosystem
-```{r}
-db_processed %>% 
-  group_by(ecosystem) %>% 
-  dplyr::summarise(n = n()) %>% 
-  knitr::kable()
-```
 
 #### Sample count by depth
 ```{r depth}
@@ -220,6 +273,27 @@ db_processed %>%
   labs(x = "bottom depth, cm")
 
 
+```
+
+
+## TABLES
+
+### Sample count by biome
+
+```{r}
+db_processed %>% 
+  group_by(ClimateTypes) %>% 
+  dplyr::summarise(n = n()) %>% 
+  knitr::kable()
+```
+
+
+### Sample count by ecosystem
+```{r}
+db_processed %>% 
+  group_by(ecosystem) %>% 
+  dplyr::summarise(n = n()) %>% 
+  knitr::kable()
 ```
 
 
