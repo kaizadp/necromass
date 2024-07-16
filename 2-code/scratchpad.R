@@ -32,7 +32,7 @@ db_lat_lon_setup <-
   rename(Latitude = latitude, Longitude = longitude)
 
 
-
+library(rcrossref)
 testing = function(){
   x = 
     cr_works(dois = "10.7710/2162-3309.1252") %>%
@@ -51,8 +51,8 @@ testing = function(){
   doi_df = tribble(
     ~doi,
     "10.7710/2162-3309.1252",
-    "10.7710/2162-3309.1252",
-    "10.7710/2162-3309.1252"
+    "https://doi.org/10.1111/gcb.16676",
+    "https://doi.org/10.1016/j.agee.2020.106816"
   )
   
   get_bib = function(){
@@ -74,3 +74,33 @@ testing = function(){
   }
   
 }
+
+## bibliography ----
+
+install.packages("RefManageR")
+library(RefManageR)
+
+
+dat <- do.call(bind_rows, lapply(doi_df$doi, function(x){
+  
+  x = 
+    GetBibEntryWithDOI(x) %>% 
+    as.data.frame() %>% 
+    rownames_to_column("study") %>% 
+    dplyr::select(study, doi, title, author, journal, year)
+  
+  
+}))
+
+
+
+
+db_processed_data %>% count(gluN)
+
+x = db_processed_data %>% 
+summarise_all(funs(sum(!is.na(.)))) %>% 
+  pivot_longer(everything())
+
+
+db_processed_data %>% skimr::skim()
+x = str(db_processed_data)
