@@ -23,7 +23,7 @@ source("2-code/1-processing.R")
 # Replace the target list below with your own:
 list(
   # load raw database
-  tar_target(db_gsheets_data, "1-data/RAW-db_gsheets.csv", format = "file"),
+  tar_target(db_gsheets_data, "1-data/necromass_database_RAW - 2026.csv", format = "file"),
   tar_target(db_gsheets, read.csv(db_gsheets_data, na = "")),
   # process and clean data
   tar_target(db_processed, clean_db(db_gsheets)),
@@ -32,8 +32,8 @@ list(
   
  # export
  tar_target(export, {
-   write.csv(db_processed_data, "3-database/database_data.csv", row.names = FALSE, na = "")
-   write.csv(db_processed_studies, "3-database/database_studies.csv", row.names = FALSE, na = "")
+   write.csv(db_processed_data, "3-database/database_data - 2026.csv", row.names = FALSE, na = "")
+   write.csv(db_processed_studies, "3-database/database_studies - 2026.csv", row.names = FALSE, na = "")
  }, 
  format = "file")
   
