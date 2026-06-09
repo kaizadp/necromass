@@ -50,3 +50,7 @@ rsconnect/
 
 .DS_Store
 *.html
+
+_targets/
+renv*
+.Rprofile
