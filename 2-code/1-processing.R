@@ -158,7 +158,8 @@ assign_climate_biome = function(dat){
 assign_whittaker_biome = function(dat){
   # code adapted from EBG, 2023
   
-  shp = readShapePoly('1-data/geographic_databases/1b-terrestrial_ecosystems_teow/wwf_terr_ecos.shp')
+  shp = st_read('1-data/geographic_databases/1b-terrestrial_ecosystems_teow/wwf_terr_ecos.shp')
+  shp <- st_make_valid(shp)
   
   long.lat = 
     dat %>% 
@@ -168,14 +169,20 @@ assign_whittaker_biome = function(dat){
            latitude = Latitude) %>% 
     mutate(latitude = as.numeric(latitude),
            longitude = as.numeric(longitude)) %>% 
-    drop_na()
+#    drop_na() %>% 
+    drop_na(latitude, longitude) %>% 
+    # Convert coordinates to spatial points and set the original CRS (usually WGS84 / EPSG:4326)
+    st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+
+  long.lat <- st_transform(long.lat, st_crs(shp))
+  poly <- st_join(long.lat, shp, join = st_intersects, left = TRUE)
   
-  
-  #https://stackoverflow.com/questions/44170102/find-in-which-polygon-the-points-in-a-map-are
-  coordinates(long.lat) <- ~ longitude + latitude
-  # # Set the projection of the SpatialPointsDataFrame using the projection of the shapefile
-  proj4string(long.lat) <- proj4string(shp)
-  poly = over(long.lat, shp)
+      ## DEPRECATED CODE FROM MAPTOOLS PACKAGE
+      #https://stackoverflow.com/questions/44170102/find-in-which-polygon-the-points-in-a-map-are
+      #coordinates(long.lat) <- ~ longitude + latitude
+      # # Set the projection of the SpatialPointsDataFrame using the projection of the shapefile
+      #proj4string(long.lat) <- proj4string(shp)
+      #poly = over(long.lat, shp)
   
   eco.meta = cbind(long.lat,poly,rep(NA, nrow(poly)));names(eco.meta)[ncol(eco.meta)] = 'biome_name'
   eco.meta = as.data.frame(eco.meta)
