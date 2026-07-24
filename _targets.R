@@ -22,20 +22,48 @@ source("2-code/1-processing.R")
 
 # Replace the target list below with your own:
 list(
+  ## V1.0.0 -- 2024 DATA
   # load raw database
-  tar_target(db_gsheets_data, "1-data/necromass_database_RAW - 2026.csv", format = "file"),
-  tar_target(db_gsheets, read.csv(db_gsheets_data, na = "")),
+  tar_target(V1_db_gsheets_data, "1-data/necromass_database_RAW - 2024.csv", format = "file"),
+  tar_target(V1_db_gsheets, read.csv(V1_db_gsheets_data, na = c("", "N/A"))),
   # process and clean data
-  tar_target(db_processed, clean_db(db_gsheets)),
-  tar_target(db_processed_data, db_processed$DB_WITH_NUMBERS),
-  tar_target(db_processed_studies, db_processed$STUDIES_FULL),
+  tar_target(V1_db_processed, clean_db(V1_db_gsheets)),
+  tar_target(V1_db_processed_data, V1_db_processed$DB_WITH_NUMBERS),
+  tar_target(V1_db_processed_studies, V1_db_processed$STUDIES_FULL),
   
- # export
- tar_target(export, {
-   write.csv(db_processed_data, "3-database/database_data - 2026.csv", row.names = FALSE, na = "")
-   write.csv(db_processed_studies, "3-database/database_studies - 2026.csv", row.names = FALSE, na = "")
- }, 
- format = "file")
+  #  # export
+  #  tar_target(V1_export, {
+  #    write.csv(V1_db_processed_data, "3-database/database_data.csv", row.names = FALSE, na = "")
+  #    write.csv(V1_db_processed_studies, "3-database/database_studies.csv", row.names = FALSE, na = "")
+  #  }, 
+  #  format = "file"),
+  
+  ## V2.0.0 -- 2026 DATA
+  # load raw database
+  tar_target(V2_db_gsheets_data, "1-data/necromass_database_RAW - 2026.csv", format = "file"),
+  tar_target(V2_db_gsheets, read.csv(V2_db_gsheets_data, na = c("", "N/A"))),
+  # process and clean data
+  tar_target(V2_db_processed, clean_db_2026(V2_db_gsheets, V1_db_processed_data, V1_db_processed_studies)),
+  tar_target(V2_db_processed_data, V2_db_processed$DB_WITH_NUMBERS),
+  tar_target(V2_db_processed_studies, V2_db_processed$STUDIES_FULL),
+  
+  # export
+  tar_target(V2_export, {
+    write.csv(V2_db_processed_data, "3-database/database_data - 2026.csv", row.names = FALSE, na = "")
+    write.csv(V2_db_processed_studies, "3-database/database_studies - 2026.csv", row.names = FALSE, na = "")
+  }, 
+  format = "file"),
+  
+  ## combined for V2
+  tar_target(V2_DB_DATA_COMBINED, bind_rows(V1_db_processed_data %>% mutate_all(as.character), V2_db_processed_data%>% mutate_all(as.character))),
+  tar_target(V2_DB_STUDIES_COMBINED, bind_rows(V1_db_processed_studies %>% mutate_all(as.character), V2_db_processed_studies %>% mutate_all(as.character))),
+  
+  # export
+  tar_target(V2_combined_export, {
+    write.csv(V2_DB_DATA_COMBINED, "3-database/V2_database_data.csv", row.names = FALSE, na = "")
+    write.csv(V2_DB_STUDIES_COMBINED, "3-database/V2_database_studies.csv", row.names = FALSE, na = "")
+  }, 
+  format = "file")
   
   # reports
   #tar_render(report_exploratory, path = "4-reports/a-report-exploratory.Rmd")
