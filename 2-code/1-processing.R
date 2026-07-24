@@ -428,3 +428,211 @@ clean_db = function(db_gsheets){
   
   }
 
+clean_db_2026 = function(db_gsheets, V1_db_processed_data, V1_db_processed_studies){
+  
+  # assign rownumbers to records and then remove 
+  # these rownumbers will be carried throughout the rest of the processing script,
+  # used to connect separate pieces later
+  db_rows <- 
+    db_gsheets %>% 
+    rownames_to_column("rownumber") %>% 
+    filter(is.na(skip))
+  
+  # now split the big dataframe into smaller pieces to process separately ----   
+  # 1. metadata (includes site info and sample info)
+  db_metadata <- 
+    db_rows %>% 
+    dplyr::select(
+      rownumber, notes,
+      treatment, treatment_level,
+      latitude, longitude, lat_lon_notes, elevation_m, lyrtop_cm, lyrbot_cm, horizon,
+      soil_type, ecosystem, wetland_type, plant_species, 
+      year_sampled,
+      fraction_scheme, aggregate_size
+    ) %>% 
+    force()
+  
+  # 1b. bibliography info (author, doi, etc.)
+  db_biblio <- 
+    db_rows %>% 
+    dplyr::select(
+      rownumber, author, author_doi) %>% 
+    force()
+  
+  # 2. soil (includes TC, TN, pH, etc.)
+  db_soil <- 
+    db_rows %>% 
+    dplyr::select(
+      rownumber,
+      contains("biomass"),
+      soc, soil_C, soil_N,
+      pH, pH_method, clay, silt, sand
+    ) %>% 
+    force()
+  
+  # 3. necromass (includes AS and necromass)
+  db_necromass = 
+    db_rows %>% 
+    dplyr::select(rownumber, gluN, murA, galN, manN, contains("necromass")) %>% 
+    mutate_all(as.numeric) %>% 
+    column_to_rownames("rownumber") %>% 
+    janitor::remove_empty("rows") %>% 
+    rownames_to_column("rownumber")
+  
+  #
+  # PROCESS METADATA ----
+  db_metadata_processed <- 
+    db_metadata %>% 
+    rename(Latitude = latitude, Longitude = longitude) %>% 
+    clean_lat_lon() %>% 
+    assign_climate_biome() %>% 
+    assign_whittaker_biome() %>% 
+    mutate(ecosystem = tolower(ecosystem)) %>% 
+    dplyr::select(rownumber, notes,
+                  Latitude, Longitude, lat_lon_notes, elevation_m, 
+                  MAT, MAP, ClimateTypes, biome_name, everything())
+  
+  ## PROCESSING AND CALCULATING NECROMASS COLUMNS ----
+  ## we have AS data and also some data as necromass.
+  ## pull these columns
+  ## -- where we have AS data, convert to fungal/bacterial necromass
+  ## -- where no AS data but FNC, BNC, use those values
+  ## -- then FNC + BNC = microbial necromass C
+  
+  db_necromass2 = 
+    db_necromass %>% 
+    mutate(AS_data = (!is.na(gluN|galN|murA|manN)),
+           necro_data = !is.na(bacterial_necromass_C|fungal_necromass_C))
+  
+  db_necromass_as = 
+    db_necromass2 %>% 
+    filter(AS_data) %>% 
+    ## ^need to calculate FNC and BNC and MNC from these
+    ## units are mg/kg
+    mutate(bacterial_necromass_C = murA * 45,
+           fungal_necromass_C = ((gluN/179.17) - (2 * murA/251.23)) * 179.17 * 9,
+           fungal_necromass_C = case_when(fungal_necromass_C < 0 ~ 0, TRUE ~ fungal_necromass_C),
+           microbial_necromass_C = bacterial_necromass_C + fungal_necromass_C)
+  
+  
+  db_necromass_fnc_bnc = 
+    db_necromass2 %>% 
+    filter(necro_data & !AS_data) %>% 
+    mutate(microbial_necromass_C = bacterial_necromass_C + fungal_necromass_C)
+  ## ^need to back-calculate gluN and murA?? -- probably not  
+  
+  db_necromass_mnc = 
+    db_necromass2 %>% 
+    filter(!is.na(microbial_necromass_C) & !AS_data & !necro_data)
+  ## ^ leave untouched
+  
+  db_necromass_CALCULATED = 
+    bind_rows(db_necromass_as, db_necromass_fnc_bnc, db_necromass_mnc) %>% 
+    dplyr::select(-c(AS_data, necro_data))
+  
+  
+  DB_PROCESSED = 
+    db_metadata_processed %>% 
+    right_join(db_necromass_CALCULATED) %>% 
+    left_join(db_soil)
+  
+  #DB_PROCESSED
+  
+  
+  # PROCESS BIBLIOGRAPHY ----
+  
+  N_V1_DATA = max(as.numeric(V1_db_processed_data$SNDB_record_number))
+  N_V1_STUDIES = max(as.numeric(V1_db_processed_studies$SNDB_study_number))
+  
+  studies <- 
+    DB_PROCESSED %>% 
+    dplyr::select(rownumber) %>% 
+    left_join(db_biblio) %>% 
+    distinct(author_doi) %>% 
+    drop_na() %>% 
+    #filter(grepl("doi", author_doi)) %>% 
+    arrange(desc(author_doi)) %>% 
+    mutate(SNDB_study_number = (as.numeric(rownames(.)) + N_V1_STUDIES),
+           SNDB_study_number = as.character(SNDB_study_number)) %>% 
+    dplyr::select(SNDB_study_number, author_doi)
+  
+  set_sndb_numbers = function(studies, db_biblio, DB_PROCESSED){
+    #db_with_numbers = 
+    db_biblio %>% 
+      left_join(studies) %>% 
+      dplyr::select(rownumber, SNDB_study_number) %>% 
+      right_join(DB_PROCESSED) %>% 
+      mutate(SNDB_record_number = (as.numeric(rownames(.)) + N_V1_DATA),
+             SNDB_record_number = as.character(SNDB_record_number)) %>% 
+      dplyr::select(SNDB_record_number, SNDB_study_number, everything(), -rownumber)
+    
+    
+  }
+  DB_WITH_NUMBERS = set_sndb_numbers(studies, db_biblio, DB_PROCESSED)
+  
+  
+  get_full_biblio <- function(studies){
+    # use the `RefManageR` package to pull author names, article title, etc. from DOIs
+    library(RefManageR)
+    
+    # some DOIs will break the code. Chinese DOIs and a few weird Springer DOIs. Removing those first.
+    # those will be done below, in the "manual DOIs" section 
+    ignore_dois = c(
+      "cnki",
+      "j.1000",
+      "j.1001", 
+      "j.issn",
+      "trxb",
+      "https://doi.org/10.1023/A:1010694032121"
+    )
+    
+    ## using RefManageR
+    x = studies %>% distinct(author_doi, SNDB_study_number) %>% filter(grepl("doi", author_doi))
+    
+    x2 = 
+      x %>% 
+      filter(!grepl(paste(ignore_dois, collapse = "|"), author_doi)) %>% 
+      pull(author_doi)
+    
+    doi_details = 
+      x2 %>% 
+      GetBibEntryWithDOI(.) %>% 
+      as.data.frame() %>% 
+      rownames_to_column("study") %>% 
+      dplyr::select(study, doi, url, title, author, journal, year)
+    
+    studies_with_doi_details = 
+      studies %>% 
+      mutate(author_doi = str_remove(author_doi, "https://doi.org/")) %>% 
+      left_join(doi_details, by = c("author_doi" = "doi")) %>% 
+      rename(doi = author_doi) %>% 
+      dplyr::select(-study, -url) %>% 
+      filter(!is.na(title))
+    
+    
+    ## manual DOIs
+    manual = read.csv("1-data/biblio_manual_addiitons.csv", na = "")
+    studies_with_doi_manual = 
+      studies %>% 
+      mutate(author_doi = str_remove(author_doi, "https://doi.org/")) %>% 
+      left_join(manual) %>% 
+      filter(!is.na(title)) %>% 
+      dplyr::select(-author_doi)
+    
+    studies_with_full_doi = 
+      studies_with_doi_details %>% rbind(studies_with_doi_manual) %>% 
+      mutate(SNDB_study_number = as.numeric(SNDB_study_number)) %>% 
+      arrange(SNDB_study_number)
+    
+  }
+  
+  STUDIES_FULL = get_full_biblio(studies)
+  
+  list(DB_WITH_NUMBERS = DB_WITH_NUMBERS,
+       STUDIES_FULL = STUDIES_FULL)
+  
+  
+  
+  
+}
+
