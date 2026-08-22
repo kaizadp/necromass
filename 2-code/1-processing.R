@@ -243,7 +243,8 @@ clean_db = function(db_gsheets){
     dplyr::select(
       rownumber, notes,
       treatment, treatment_level,
-      latitude, longitude, lat_lon_notes, elevation_m, lyrtop_cm, lyrbot_cm, horizon,
+      latitude, longitude, #lat_lon_notes, 
+      elevation_m, lyrtop_cm, lyrbot_cm, horizon,
       soil_type, ecosystem, wetland_type, plant_species, 
       year_sampled,
       fraction_scheme, aggregate_size
@@ -287,7 +288,8 @@ clean_db = function(db_gsheets){
     assign_whittaker_biome() %>% 
     mutate(ecosystem = tolower(ecosystem)) %>% 
     dplyr::select(rownumber, notes,
-                  Latitude, Longitude, lat_lon_notes, elevation_m, 
+                  Latitude, Longitude, #lat_lon_notes, 
+                  elevation_m, 
                   MAT, MAP, ClimateTypes, biome_name, everything())
   
   ## PROCESSING AND CALCULATING NECROMASS COLUMNS ----
@@ -445,7 +447,8 @@ clean_db_2026 = function(db_gsheets, V1_db_processed_data, V1_db_processed_studi
     dplyr::select(
       rownumber, notes,
       treatment, treatment_level,
-      latitude, longitude, lat_lon_notes, elevation_m, lyrtop_cm, lyrbot_cm, horizon,
+      latitude, longitude, #lat_lon_notes, 
+      elevation_m, lyrtop_cm, lyrbot_cm, horizon,
       soil_type, ecosystem, wetland_type, plant_species, 
       year_sampled,
       fraction_scheme, aggregate_size
@@ -489,8 +492,8 @@ clean_db_2026 = function(db_gsheets, V1_db_processed_data, V1_db_processed_studi
     assign_whittaker_biome() %>% 
     mutate(ecosystem = tolower(ecosystem)) %>% 
     dplyr::select(rownumber, notes,
-                  Latitude, Longitude, lat_lon_notes, elevation_m, 
-                  MAT, MAP, ClimateTypes, biome_name, everything())
+                  Latitude, Longitude, # lat_lon_notes, 
+                  elevation_m, MAT, MAP, ClimateTypes, biome_name, everything())
   
   ## PROCESSING AND CALCULATING NECROMASS COLUMNS ----
   ## we have AS data and also some data as necromass.
