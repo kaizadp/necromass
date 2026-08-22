@@ -334,7 +334,13 @@ clean_db = function(db_gsheets){
   DB_PROCESSED = 
     db_metadata_processed %>% 
     right_join(db_necromass_CALCULATED) %>% 
-    left_join(db_soil)
+    left_join(db_soil) %>% 
+    rename(latitude = Latitude,
+           longitude = Longitude,
+           climate_type = ClimateTypes,
+           lyr_top = lyrtop_cm,
+           lyr_btm = lyrbot_cm,
+           SOC = soc)
 
   #DB_PROCESSED
   
@@ -537,7 +543,13 @@ clean_db_2026 = function(db_gsheets, V1_db_processed_data, V1_db_processed_studi
   DB_PROCESSED = 
     db_metadata_processed %>% 
     right_join(db_necromass_CALCULATED) %>% 
-    left_join(db_soil)
+    left_join(db_soil) %>% 
+    rename(latitude = Latitude,
+           longitude = Longitude,
+           climate_type = ClimateTypes,
+           lyr_top = lyrtop_cm,
+           lyr_btm = lyrbot_cm,
+           SOC = soc)
   
   #DB_PROCESSED
   
