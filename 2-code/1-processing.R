@@ -149,7 +149,7 @@ assign_climate_biome = function(dat){
     mutate(ClimateTypes = case_when(grepl("A", ClimateTypes) ~ "equatorial",
                                     grepl("B", ClimateTypes) ~ "arid",
                                     grepl("C", ClimateTypes) ~ "temperate",
-                                    grepl("D", ClimateTypes) ~ "snow",
+                                    grepl("D", ClimateTypes) ~ "cold/snow",
                                     grepl("E", ClimateTypes) ~ "polar")) %>% 
     dplyr::select(-Latitude2, -Longitude2)
   
