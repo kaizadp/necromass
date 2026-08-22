@@ -16,9 +16,9 @@ knitr::opts_chunk$set(echo = FALSE,
 
 ```{r}
 source("2-code/0-packages.R")
-targets::tar_load(db_processed)
+#targets::tar_load(db_processed)
 
-db_processed = read.csv("3-database/database_data.csv", na = "")
+db_processed = read.csv("3-database/V2_database_data.csv", na = "")
 
 ```
 
@@ -36,7 +36,7 @@ map_climate_regions_all =
   mutate(ClimateTypes = case_when(grepl("A", ClimateTypes) ~ "equatorial",
                                   grepl("B", ClimateTypes) ~ "arid",
                                   grepl("C", ClimateTypes) ~ "temperate",
-                                  grepl("D", ClimateTypes) ~ "snow",
+                                  grepl("D", ClimateTypes) ~ "cold/snow",
                                   grepl("E", ClimateTypes) ~ "polar")) %>% 
   #  reorder_biome_levels() %>% 
   ggplot(aes(x = Longitude, y = Latitude, color = ClimateTypes))+
@@ -64,16 +64,16 @@ world <- ne_countries(scale = "medium",  returnclass = "sf", type = "countries")
 
 sndb_map_data = 
   db_processed %>% 
-  distinct(Latitude, Longitude, ClimateTypes) %>% 
+  distinct(latitude, longitude, climate_type) %>% 
   drop_na() %>% 
-  mutate(ClimateTypes = factor(ClimateTypes, levels = c("arid", "equatorial", "temperate", "snow", "polar")))
+  mutate(climate_type = factor(climate_type, levels = c("arid", "equatorial", "temperate", "cold/snow", "polar")))
 
 world %>% 
   ggplot()+
   geom_sf(color = NA, alpha = 0.7)+
   geom_point(data = sndb_map_data,
-             aes(x = Longitude, y = Latitude,
-                 color = ClimateTypes), 
+             aes(x = longitude, y = latitude,
+                 color = climate_type), 
              size = 2)+
   labs(color = "",
        x = "",
@@ -96,7 +96,7 @@ world %>%
 # plot MAT/MAP distribution
   db_processed %>% 
     ggplot(aes(x = MAT, y = MAP/10))+
-    geom_point(aes(color = ClimateTypes), size = 3)+
+    geom_point(aes(color = climate_type), size = 3)+
     labs(x = "
          Mean annual temperature (°C)",
          y = "Mean annual precipitation (cm)
@@ -142,7 +142,7 @@ world %>%
 ```{r subset}
 db_subset <- 
   db_processed %>% 
-  dplyr::select(contains("necromass"), ecosystem, ClimateTypes, biome_name, clay, fraction_scheme, horizon) %>% 
+  dplyr::select(contains("necromass"), ecosystem, climate_type, biome_name, clay, fraction_scheme, horizon) %>% 
   filter(fraction_scheme == "bulk soil") %>% 
   mutate(bacterial_percent = 100 * bacterial_necromass_C/microbial_necromass_C)
 ```
@@ -211,8 +211,8 @@ labs(y = "BNC:MNC, %",
 ```{r}
 gg_depth <- 
   db_processed %>% 
-  filter(lyrtop_cm <= 100) %>% 
-  ggplot(aes(y = lyrbot_cm, x = microbial_necromass_C/1000))+
+  filter(lyr_top <= 100) %>% 
+  ggplot(aes(y = lyr_btm, x = microbial_necromass_C/1000))+
   geom_point(color = "darkgreen")+
   labs(x = "Microbial Necromass C, g/kg",
        y = "Bottom depth, cm")+
@@ -221,7 +221,7 @@ gg_depth <-
 gg_lat = 
   db_processed %>% 
   filter(!is.na(ecosystem)) %>% 
-  ggplot(aes(y = Latitude, x = microbial_necromass_C/1000))+
+  ggplot(aes(y = latitude, x = microbial_necromass_C/1000))+
   geom_point(color = "brown")+
   scale_color_brewer(palette = "Dark2", direction = -1)+
   labs(x = "Microbial Necromass C, g/kg")+
@@ -230,7 +230,7 @@ gg_lat =
 ```
 
 
-```{r}
+```{r, fig.height=12, fig.width=12}
 cowplot::plot_grid(gg_mnc, gg_bnc, gg_lat, gg_depth, labels = "AUTO")
 ```
 
@@ -240,37 +240,37 @@ cowplot::plot_grid(gg_mnc, gg_bnc, gg_lat, gg_depth, labels = "AUTO")
 
 depth_summary = 
   db_processed %>%
-  dplyr::select(lyrtop_cm, lyrbot_cm) %>% 
+  dplyr::select(lyr_top, lyr_btm) %>% 
   mutate_all(as.numeric) %>% 
-  filter(lyrtop_cm < 1000) %>% 
-  mutate(lyrtop_cm = round(lyrtop_cm, digits = -1),
-         lyrbot_cm = round(lyrbot_cm, digits = -1)) %>% 
-  group_by(lyrtop_cm, lyrbot_cm) %>% 
+  filter(lyr_top < 1000) %>% 
+  mutate(lyr_top = round(lyr_top, digits = -1),
+         lyr_btm = round(lyr_btm, digits = -1)) %>% 
+  group_by(lyr_top, lyr_btm) %>% 
   dplyr::summarise(n = n()) %>% 
   ungroup() %>% 
-  arrange(n, lyrtop_cm, lyrbot_cm)
+  arrange(n, lyr_top, lyr_btm)
   
 library(scales)
 depth_summary %>% 
   ggplot(aes(x = n))+
   geom_hline(yintercept = 20, color = "grey", linetype = "longdash")+
-  geom_segment(aes(y = lyrtop_cm, yend = lyrbot_cm, xend = n,
-                   color = interaction(lyrtop_cm, lyrbot_cm)),
+  geom_segment(aes(y = lyr_top, yend = lyr_btm, xend = n,
+                   color = interaction(lyr_top, lyr_btm)),
                show.legend = F, linewidth = 2)+
-  geom_point(aes(y = lyrtop_cm), size = 4)+
-  geom_point(aes(y = lyrbot_cm), size = 4)+
+  geom_point(aes(y = lyr_top), size = 4)+
+  geom_point(aes(y = lyr_btm), size = 4)+
   scale_x_continuous(trans = c("log10", "reverse"))+
   scale_y_reverse()+
   labs(x = "count", y = "depth, cm")
 ```
 
-of the 3000+ datapoints, 2512 data points are in the top 20 cm (lyrbot_cm >= 20)
+of the 4000+ datapoints, 3454 data points are in the top 20 cm (lyr_btm >= 20)
 
 
 ```{r}
 
 db_processed %>% 
-  ggplot(aes(x = as.numeric(lyrbot_cm)))+
+  ggplot(aes(x = as.numeric(lyr_btm)))+
   geom_density()+
   geom_histogram()+
   coord_flip()+
@@ -287,7 +287,7 @@ db_processed %>%
 
 ```{r}
 db_processed %>% 
-  group_by(ClimateTypes) %>% 
+  group_by(climate_type) %>% 
   dplyr::summarise(n = n()) %>% 
   knitr::kable()
 ```
@@ -300,6 +300,19 @@ db_processed %>%
   dplyr::summarise(n = n()) %>% 
   knitr::kable()
 ```
+
+### total counts
+
+```{r}
+print("Number of records")
+db_processed %>% distinct(SNDB_record_number) %>% count()
+
+print("Number of studies")
+db_processed %>% distinct(SNDB_study_number) %>% count()
+
+
+```
+
 
 
 ---
