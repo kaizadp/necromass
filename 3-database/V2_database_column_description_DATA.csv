@@ -1,0 +1,43 @@
+﻿Column name,Units,Class,Study reported?,Description
+SNDB_record_number,unitless,numeric,,"generated for this database, unique identifier for each data record"
+SNDB_study_number,unitless,numeric,,"generated for this database, unique identifier for each piece of primary literature used. corresponding bibliographic info is in the “studies” file."
+date added to SNDB,YYYY-MM-DD,date,,all entries in V1 have a standardized date of 2024-09-01
+notes,,free text,,"additional comments or notes, as needed"
+latitude,decimal degrees,numeric,study-reported,"study-reported latitude, in decimal format; positive = north"
+longitude,decimal degrees,numeric,study-reported,"study-reported longitude, in decimal format; positive = east"
+elevation,m,numeric,study-reported,elevation of site or sampling location
+MAT,℃,numeric,calculated,"mean annual temperature, derived from gridded datasets based on latitude and longitude"
+MAP,cm,numeric,calculated,"mean annual precipitation, derived from gridded datasets based on latitude and longitude"
+climate_types,,controlled vocabulary,calculated,"simplified Köppen-Geiger classification based on latitude and longitude. values include: arid, equatorial, polar, snow, temperate "
+biome_name,,controlled vocabulary,calculated,"Whittaker Biome classification based on latitude and longitude. values include: Boreal forests/Taigas, Deserts & Xeric Shrublands, Flooded Grasslands & Savannas, Mediterranean Forests/Woodlands/Scrub, Montane Grasslands & Shrublands, Temperate broadleaf & mixed forests, Temperate conifer forests, Temperate grasslands/savanna/shrublands, Tropical & subtropical dry broadleaf forests, Tropical & subtropical grasslands/savannas/shrublands, Tropical & subtropical moist broadleaf forests"
+treatment,,controlled vocabulary,study-reported,treatment/disturbance manipulation
+treatment_level,,free text,study-reported,"treatment/manipulation intensity, if applicable"
+lyr_top,cm,numeric,study-reported,depth of top of sampled layer
+lyr_btm,cm,numeric,study-reported,depth of bottom of sampled layer
+horizon,,free text,study-reported,soil horizon
+soil_type,,free text,study-reported,soil classification
+ecosystem,,controlled vocabulary,study-reported,"ecosystem descriptors categorized into fixed classes: cropland, forest, grassland, wetland"
+wetland_type,,controlled vocabulary,study-reported,"wetland descriptors categorized into fixed classes: freshwater marsh, mangrove, paddy, peatland, salt marsh, tidal wetland, upland"
+plant_species,,free text,study-reported,study reported broad species or terms like 'broadleaf forest''
+year_sampled,YYYY,numeric,study-reported,study reported
+fraction_scheme,,controlled vocabulary,study-reported,bulk soil vs. aggregates
+aggregate_size,mm,free text,study-reported,size class of aggregates
+gluN,mg/kg,numeric,study-reported,concentration of total glucosamine
+murA,mg/kg,numeric,study-reported,concentration of muramic acid
+galN,mg/kg,numeric,study-reported,concentration of galactosamine
+manN,mg/kg,numeric,study-reported,concentration of mannose
+microbial_necromass_C,mg/kg,numeric,calculated,"microbial necromass carbon, calculated as the sum of fungal and bacterial necromass carbon"
+fungal_necromass_C,mg/kg,numeric,calculated,"fungal necromass carbon, calculated from gluN and murA (see associated paper for calculations)"
+bacterial_necromass_C,mg/kg,numeric,calculated,"bacterial necromass carbon, calculated from murA (see associated paper for calculations)"
+bacterial_biomass_C,mg/kg,numeric,study-reported,bacterial biomass carbon
+fungal_biomass_C,mg/kg,numeric,study-reported,fungal biomass carbon
+microbial_biomass_C,mg/kg,numeric,study-reported,microbial biomass carbon
+microbial_biomass_N,mg/kg,numeric,study-reported,microbial biomass nitrogen
+SOC,g/kg,numeric,study-reported,total organic carbon in soil
+soil_C,g/kg,numeric,study-reported,total carbon in soil
+soil_N,g/kg,numeric,study-reported,total nitrogen in soil
+pH,,numeric,study-reported,pH
+pH_method,,free text,study-reported,method of pH measurement
+clay,percent,numeric,study-reported,clay percentage
+silt,percent,numeric,study-reported,silt percentage
+sand,percent,numeric,study-reported,sand percentage
