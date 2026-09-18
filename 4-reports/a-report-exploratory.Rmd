@@ -229,9 +229,85 @@ gg_lat =
   
 ```
 
+## fractions
 
-```{r, fig.height=12, fig.width=12}
-cowplot::plot_grid(gg_mnc, gg_bnc, gg_lat, gg_depth, labels = "AUTO")
+```{r}
+
+db_processed %>% distinct(fraction_scheme)
+db_processed %>% distinct(aggregate_size)
+
+db_processed2 = 
+  db_processed %>% 
+  mutate(fraction_class = case_when(
+    # Clay & silt (<0.053 mm)
+    aggregate_size %in% c("<0.002mm", "0.002-0.02mm", "0.002-0.020mm", "<0.053mm", 
+                          "<0.005mm", "0.020-0.002mm","<0.020mm", "0.002-0.053mm") 
+    ~ "<0.053 mm",
+    # Microaggregates (0.053–0.250 mm)
+    aggregate_size %in% c("0.053-0.250mm", "0.063-0.250mm", "0.250-0.053mm", "0.020-0.250mm")
+    ~ "0.053-0.250 mm",
+    # Small macroaggregates (0.250–2 mm)
+    aggregate_size %in% c("0.250-2mm", "2-0.250mm", "0.250-1mm", "1-2mm")
+    ~ "0.250-2 mm",
+    # Large macroaggregates (>2 mm)
+    aggregate_size %in% c(">2mm", ">3mm", ">4mm", ">5mm", ">6mm", ">7mm")
+    ~ ">2 mm",
+    # Everything else -> NA (excluded)
+    TRUE ~ NA_character_
+  ),
+  fraction_class = factor(fraction_class, levels = c(">2 mm", "0.250-2 mm", "0.053-0.250 mm", "<0.053 mm")),
+  fraction_scheme = case_when(is.na(fraction_scheme) ~ "bulk soil", .default = fraction_scheme),
+  fraction_scheme = factor(fraction_scheme, levels = c("bulk soil", "rhizosphere", "aggregate", "MAOM", "POM"))
+  )
+
+gg_aggregates = 
+db_processed2 %>% 
+  filter(!is.na(fraction_class)) %>% 
+  ggplot(aes(x = fraction_class, y = microbial_necromass_C/1000,
+             color = fraction_class, fill = fraction_class))+
+    ggdist::stat_halfeye(aes(), 
+                       size = 1, alpha = 0.5,
+                       position = position_nudge(x = 0.2), width = 0.5, 
+                       #slab_color = "black"
+  )+
+  geom_jitter(aes(), width = 0.1, ) +
+  scale_color_manual(values = whistledown::whistledown_palette("featherington", 4))+
+  scale_fill_manual(values = whistledown::whistledown_palette("featherington", 4))+
+    labs(y = "Microbial Necromass C, g/kg",
+         x = "Aggregate Size Class")+
+
+  theme(legend.position = "none")+
+  NULL
+
+
+gg_fraction = 
+db_processed2 %>% 
+ # filter(!is.na(fraction_class)) %>% 
+  ggplot(aes(x = fraction_scheme, y = microbial_necromass_C/1000,
+             color = fraction_scheme, fill = fraction_scheme))+
+    ggdist::stat_halfeye(aes(), 
+                       size = 1, alpha = 0.5,
+                       position = position_nudge(x = 0.2), width = 0.5, 
+                       #slab_color = "black"
+  )+
+  geom_jitter(aes(), width = 0.1, ) +
+  scale_color_manual(values = whistledown::whistledown_palette("queen", 5))+
+  scale_fill_manual(values = whistledown::whistledown_palette("queen", 5))+
+      labs(y = "Microbial Necromass C, g/kg",
+         x = "Soil Fraction")+
+  theme(legend.position = "none")+
+  NULL
+
+cowplot::plot_grid(gg_fraction, gg_aggregates, rel_widths = c(5, 4), labels = c("A", "B"))
+
+```
+
+
+
+```{r, fig.height=18, fig.width=12}
+cowplot::plot_grid(gg_mnc, gg_bnc, gg_fraction, gg_aggregates, gg_lat, gg_depth, 
+                   ncol = 2,
+                   labels = "AUTO")
 ```
 
 

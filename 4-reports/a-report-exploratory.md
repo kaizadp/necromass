@@ -19,7 +19,54 @@ Necromass Database: Exploration
 
 ### Distribution by ecosystem
 
+## fractions
+
+    ##   fraction_scheme
+    ## 1       bulk soil
+    ## 2       aggregate
+    ## 3     rhizosphere
+    ## 4            <NA>
+    ## 5            MAOM
+    ## 6             POM
+
+    ##    aggregate_size
+    ## 1            <NA>
+    ## 2       0.250-2mm
+    ## 3        <0.250mm
+    ## 4    0.002-0.02mm
+    ## 5        <0.002mm
+    ## 6   0.020-0.250mm
+    ## 7            >2mm
+    ## 8   0.053-0.250mm
+    ## 9        <0.053mm
+    ## 10  0.002-0.020mm
+    ## 11  0.063-0.250mm
+    ## 12  0.002-0.250mm
+    ## 13       <0.005mm
+    ## 14      2-0.250mm
+    ## 15  0.250-0.053mm
+    ## 16           >1mm
+    ## 17      0.250-1mm
+    ## 18  0.020-0.002mm
+    ## 19       <0.020mm
+    ## 20          1-2mm
+    ## 21      0.053-8mm
+    ## 22       >0.020mm
+    ## 23      0.250-3mm
+    ## 24      0.250-4mm
+    ## 25      0.250-5mm
+    ## 26       >0.250mm
+    ## 27      0.053-2mm
+    ## 28  0.002-0.053mm
+    ## 29           >3mm
+    ## 30           >4mm
+    ## 31           >5mm
+    ## 32           >6mm
+    ## 33           >7mm
+
 ![](a-report-exploratory_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+![](a-report-exploratory_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
 #### Sample count by depth
 
@@ -28,7 +75,7 @@ Necromass Database: Exploration
 of the 4000+ datapoints, 3454 data points are in the top 20 cm (lyr_btm
 \>= 20)
 
-![](a-report-exploratory_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](a-report-exploratory_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 ## TABLES
 
@@ -77,11 +124,11 @@ of the 4000+ datapoints, 3454 data points are in the top 20 cm (lyr_btm
 Session Info
 </summary>
 
-Date run: 2026-08-22
+Date run: 2026-09-03
 
     ## R version 4.5.0 (2025-04-11)
     ## Platform: aarch64-apple-darwin20
-    ## Running under: macOS 26.6
+    ## Running under: macOS 26.6.2
     ## 
     ## Matrix products: default
     ## BLAS:   /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRblas.0.dylib 
@@ -120,15 +167,15 @@ Date run: 2026-08-22
     ## [37] rstudioapi_0.17.1    httr_1.4.7           tzdb_0.5.0          
     ## [40] readxl_1.4.5         DBI_1.2.3            proxy_0.4-27        
     ## [43] cellranger_1.1.0     base64enc_0.1-3      vctrs_0.7.1         
-    ## [46] jsonlite_2.0.0       hms_1.1.3            crosstalk_1.2.1     
-    ## [49] ggdist_3.3.3         units_0.8-7          glue_1.8.0          
-    ## [52] codetools_0.2-20     cowplot_1.1.3        distributional_0.5.0
-    ## [55] stringi_1.8.7        gtable_0.3.6         raster_3.6-32       
-    ## [58] pillar_1.10.2        htmltools_0.5.8.1    satellite_1.0.6     
-    ## [61] R6_2.6.1             evaluate_1.0.3       lattice_0.22-6      
-    ## [64] png_0.1-8            gargle_1.5.2         agricolae_1.3-7     
-    ## [67] renv_1.1.7           class_7.3-23         Rcpp_1.1.1          
-    ## [70] nlme_3.1-168         xfun_0.53            fs_1.6.6            
-    ## [73] pkgconfig_2.0.3
+    ## [46] jsonlite_2.0.0       whistledown_0.1.0    hms_1.1.3           
+    ## [49] crosstalk_1.2.1      ggdist_3.3.3         units_0.8-7         
+    ## [52] glue_1.8.0           codetools_0.2-20     cowplot_1.1.3       
+    ## [55] distributional_0.5.0 stringi_1.8.7        gtable_0.3.6        
+    ## [58] raster_3.6-32        pillar_1.10.2        htmltools_0.5.8.1   
+    ## [61] satellite_1.0.6      R6_2.6.1             evaluate_1.0.3      
+    ## [64] lattice_0.22-6       png_0.1-8            gargle_1.5.2        
+    ## [67] agricolae_1.3-7      renv_1.1.7           class_7.3-23        
+    ## [70] Rcpp_1.1.1           nlme_3.1-168         xfun_0.53           
+    ## [73] fs_1.6.6             pkgconfig_2.0.3
 
 </details>
