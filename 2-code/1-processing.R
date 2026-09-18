@@ -553,7 +553,9 @@ clean_db_2026 = function(db_gsheets, V1_db_processed_data, V1_db_processed_studi
            climate_type = ClimateTypes,
            lyr_top = lyrtop_cm,
            lyr_btm = lyrbot_cm,
-           SOC = soc)
+           SOC = soc,
+           elevation = elevation_m) %>% 
+    mutate(wetland_type = tolower(wetland_type))
   
   #DB_PROCESSED
   
