@@ -8,8 +8,8 @@ longitude,decimal degrees,numeric,study-reported,"study-reported longitude, in d
 elevation,m,numeric,study-reported,elevation of site or sampling location
 MAT,℃,numeric,calculated,"mean annual temperature, derived from gridded datasets based on latitude and longitude"
 MAP,cm,numeric,calculated,"mean annual precipitation, derived from gridded datasets based on latitude and longitude"
-climate_types,,controlled vocabulary,calculated,"simplified Köppen-Geiger classification based on latitude and longitude. values include: arid, equatorial, polar, snow, temperate "
-biome_name,,controlled vocabulary,calculated,"Whittaker Biome classification based on latitude and longitude. values include: Boreal forests/Taigas, Deserts & Xeric Shrublands, Flooded Grasslands & Savannas, Mediterranean Forests/Woodlands/Scrub, Montane Grasslands & Shrublands, Temperate broadleaf & mixed forests, Temperate conifer forests, Temperate grasslands/savanna/shrublands, Tropical & subtropical dry broadleaf forests, Tropical & subtropical grasslands/savannas/shrublands, Tropical & subtropical moist broadleaf forests"
+climate_type,,controlled vocabulary,calculated,"simplified Köppen-Geiger classification based on latitude and longitude. values include: arid, equatorial, polar, cold/snow, temperate "
+biome_name,,controlled vocabulary,calculated,"Whittaker Biome classification based on latitude and longitude. values include: Boreal Forests/Taigas; Deserts & Xeric Shrublands; Flooded Grasslands & Savannas; Mediterranean Forests, Woodlands & Scrub; Montane Grasslands & Shrublands; Temperate Broadleaf & Mixed Forests; Temperate Conifer Forests; Temperate Grasslands, Savanna & Shrublands; Tropical & Subtropical Dry Broadleaf Forests; Tropical & Subtropical Grasslands, Savannas & Shrublands; Tropical & Subtropical Moist Broadleaf Forests"
 treatment,,controlled vocabulary,study-reported,treatment/disturbance manipulation
 treatment_level,,free text,study-reported,"treatment/manipulation intensity, if applicable"
 lyr_top,cm,numeric,study-reported,depth of top of sampled layer
