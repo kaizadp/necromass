@@ -1,7 +1,6 @@
 ﻿Column name,Units,Class,Study reported?,Description
 SNDB_record_number,unitless,numeric,,"generated for this database, unique identifier for each data record"
 SNDB_study_number,unitless,numeric,,"generated for this database, unique identifier for each piece of primary literature used. corresponding bibliographic info is in the “studies” file."
-date added to SNDB,YYYY-MM-DD,date,,all entries in V1 have a standardized date of 2024-09-01
 notes,,free text,,"additional comments or notes, as needed"
 latitude,decimal degrees,numeric,study-reported,"study-reported latitude, in decimal format; positive = north"
 longitude,decimal degrees,numeric,study-reported,"study-reported longitude, in decimal format; positive = east"
@@ -16,11 +15,11 @@ lyr_top,cm,numeric,study-reported,depth of top of sampled layer
 lyr_btm,cm,numeric,study-reported,depth of bottom of sampled layer
 horizon,,free text,study-reported,soil horizon
 soil_type,,free text,study-reported,soil classification
-ecosystem,,controlled vocabulary,study-reported,"ecosystem descriptors categorized into fixed classes: cropland, forest, grassland, wetland"
+ecosystem,,controlled vocabulary,study-reported,"ecosystem descriptors categorized into fixed classes: cropland, desert, forest, grassland, shrubland, wetland"
 wetland_type,,controlled vocabulary,study-reported,"wetland descriptors categorized into fixed classes: freshwater marsh, mangrove, paddy, peatland, salt marsh, tidal wetland, upland"
 plant_species,,free text,study-reported,study reported broad species or terms like 'broadleaf forest''
-year_sampled,YYYY,numeric,study-reported,study reported
-fraction_scheme,,controlled vocabulary,study-reported,bulk soil vs. aggregates
+year_sampled,YYYY,free text,study-reported,"year, reported as individual year or range of years"
+fraction_scheme,,controlled vocabulary,study-reported,"bulk soil vs. aggregates, rhizosphere, MAOM, POM"
 aggregate_size,mm,free text,study-reported,size class of aggregates
 gluN,mg/kg,numeric,study-reported,concentration of total glucosamine
 murA,mg/kg,numeric,study-reported,concentration of muramic acid
